@@ -6,3 +6,9 @@ package com.shoes;
 public enum SiteEnum {
     SITE_1, SITE_2, SITE_3
 }
+
+
+//comment test
+public thingy fuckyoshitup() {
+
+}
