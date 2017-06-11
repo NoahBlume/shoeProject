@@ -24,9 +24,17 @@ public class UserContainer implements Serializable {
         UserContainer.instance = instance;
     }
 
-    public void addUser(String name, String email, String password) {
-        User u = new User(name, email, password);
+    public void addUser(String firstName, String lastName) {
+        User u = new User(firstName, lastName);
         userList.add(u);
+    }
+
+    public void addUser(User user) {
+        userList.add(user);
+    }
+
+    public User removeUser(int userIndex) {
+        return userList.remove(userIndex);
     }
 
     public List<User> getUserList() {

@@ -7,7 +7,7 @@ import java.io.Serializable;
  */
 public class Purchaser implements Serializable {
 
-    public void purchase(SiteEnum se) {
+    public static void purchase(SiteEnum se) {
         switch(se) {
             case SITE_1:
                 scrape1();
@@ -23,15 +23,15 @@ public class Purchaser implements Serializable {
         }
     }
 
-    private void scrape1() {
+    private static void scrape1() {
 
     }
 
-    private void scrape2() {
+    private static void scrape2() {
 
     }
 
-    private void scrape3() {
+    private static void scrape3() {
 
     }
 }

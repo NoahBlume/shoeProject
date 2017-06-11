@@ -25,43 +25,62 @@ public class Main {
     private static void printMainOptions() {
         pl("Enter the number corresponding to the option you want to choose.");
         pl("0: Add User");
-        pl("1: Edit users");
-        int choice = scan.nextInt();
+        pl("1: Edit Users");
+        pl("2: Delete Users");
 
-        switch(choice) {
-            case 0:
-                addUser();
-                break;
-            case 1:
-                editUsers();
-                break;
-            default:
-                pl("Please enter one of the numbers listed above");
-                printMainOptions();
+        String input = scan.next();
+        if ("exit".equals(input)) {
+            return;
         }
+        try {
+            int choice = Integer.parseInt(input);
+            switch(choice) {
+                case 0:
+                    addUser();
+                    break;
+                case 1:
+                    editUsers();
+                    break;
+                case 2:
+                    deleteUsers();
+                    break;
+                default:
+                    pl("Please enter one of the numbers listed above");
+                    printMainOptions();
+            }
+        } catch (NumberFormatException e) {
+            pl("Please enter one of the numbers listed above");
+            printMainOptions();
+        }
+
     }
 
     private static void addUser() {
         pl("Enter the info for the new User (enter 'exit' to go back to the main menu)");
-        pl("Enter this User's name");
-        String name = scan.next();
-        if (name.equals("exit")) {
+        pl("Enter this User's first name");
+        String firstName = scan.next();
+        if (firstName.equals("exit")) {
             printMainOptions();
             return;
         }
+
+        pl("Enter this USer's last name");
+        String lastName = scan.next();
+        if (lastName.equals("exit")) {
+            printMainOptions();
+            return;
+        }
+        User user = new User(firstName, lastName);
+
         pl("Enter this User's email");
         String email = scan.next();
         if (email.equals("exit")) {
             printMainOptions();
             return;
         }
-        pl("Enter this User's password");
-        String password = scan.next();
-        if (password.equals("exit")) {
-            printMainOptions();
-            return;
-        }
-        uc.addUser(name, email, password);
+        user.setEmail(email);
+
+        uc.addUser(user);
         SaveHelper.save(uc);
         printMainOptions();
     }
@@ -71,69 +90,107 @@ public class Main {
         List<User> userList = uc.getUserList();
         int i = 0;
         for (User u: userList) {
-            pl(i + ": " + u.getName());
+            pl(i + ": " + u.getFullName());
             i++;
         }
-        int choice = scan.nextInt();
-        if (choice < userList.size()) {
-            editUser(userList.get(choice));
-        } else {
+
+        String input = scan.next();
+        if ("exit".equals(input)) {
+            printMainOptions();
+            return;
+        }
+        try {
+            int choice = Integer.parseInt(input);
+            if (choice < userList.size()) {
+                editUser(userList.get(choice));
+            } else {
+                pl("that wasn't a valid number");
+                editUsers();
+                return;
+            }
+        } catch (NumberFormatException e) {
             pl("that wasn't a valid number");
             editUsers();
+            return;
         }
+
         printMainOptions();
     }
 
     private static void editUser(User u) {
-        pl("User selected the user named: " + u.getName());
+        pl("User selected the user named: " + u.getFullName());
         pl("Email: " + u.getEmail());
-        pl("Password: " + u.getPassword());
         pl("Sites: " + u.getSites());
         pl("What would you like to edit (enter 'exit' to go back to the main menu)");
         pl("0: name");
         pl("1: email");
-        pl("2: password");
+        pl("2: credit card number");
         pl("3: edit site");
         pl("4: add site");
+        pl("5: delete site");
 
-        int choice = scan.nextInt();
-
-        switch(choice) {
-            case 0:
-                editName(u);
-                break;
-            case 1:
-                editEmail(u);
-                break;
-            case 2:
-                editPassword(u);
-                break;
-            case 3:
-                editSites(u);
-                break;
-            case 4:
-                addSite(u);
-                break;
-            default:
-                pl("Please enter one of the numbers listed above");
-                editUser(u);
+        String input = scan.next();
+        if ("exit".equals(input)) {
+            editUsers();
+            return;
         }
+        try {
+            int choice = Integer.parseInt(input);
+            switch(choice) {
+                case 0:
+                    editName(u);
+                    break;
+                case 1:
+                    editEmail(u);
+                    break;
+                case 2:
+                    editCcNumber(u);
+                    break;
+                case 3:
+                    editSites(u);
+                    break;
+                case 4:
+                    addSite(u);
+                    break;
+                case 5:
+                    deleteSites(u);
+                    break;
+                default:
+                    pl("Please enter one of the numbers listed above");
+                    editUser(u);
+                    return;
+            }
+        } catch (NumberFormatException e) {
+            pl("that wasn't a valid number");
+            editUser(u);
+            return;
+        }
+
         editUsers();
     }
 
     private static void editName(User u) {
-        pl("Please enter the user's new name (enter 'exit' to go back to the previous menu)");
-        String name = scan.next();
-        if (name.equals("exit")) {
+        pl("Please enter the user's new first name (enter 'exit' to go back to the previous menu)");
+        String firstName = scan.next();
+        if (firstName.equals("exit")) {
+            editUser(u);
+            return;
+        } else {
+            u.setFirstName(firstName);
+            SaveHelper.save(uc);
+        }
+        pl("Please enter the user's new last name (enter 'exit' to go back to the previous menu)");
+        String lastName = scan.next();
+        if (lastName.equals("exit")) {
             editUser(u);
         } else {
-            u.setName(name);
+            u.setFirstName(lastName);
             SaveHelper.save(uc);
         }
     }
 
     private static void editEmail(User u) {
-        pl("Please enter the user's new password (enter 'exit' to go back to the previous menu)");
+        pl("Please enter the user's new email (enter 'exit' to go back to the previous menu)");
         String email = scan.next();
         if (email.equals("exit")) {
             editUser(u);
@@ -143,13 +200,13 @@ public class Main {
         }
     }
 
-    private static void editPassword(User u) {
-        pl("Please enter the user's new password (enter 'exit' to go back to the previous menu)");
-        String password = scan.next();
-        if (password.equals("exit")) {
+    private static void editCcNumber(User u) {
+        pl("Please enter the user's new credit card number (enter 'exit' to go back to the previous menu)");
+        String ccNumber = scan.next();
+        if (ccNumber.equals("exit")) {
             editUser(u);
         } else {
-            u.setPassword(password);
+            u.setCcNumber(ccNumber);
             SaveHelper.save(uc);
         }
     }
@@ -162,13 +219,27 @@ public class Main {
             pl(i + ": " + s.toString());
             i++;
         }
-        int choice = scan.nextInt();
-        if (choice < siteList.size()) {
-            editSite(siteList.get(choice), u);
-        } else {
+
+        String input = scan.next();
+        if ("exit".equals(input)) {
+            editUser(u);
+            return;
+        }
+        try {
+            int choice = Integer.parseInt(input);
+            if (choice < siteList.size()) {
+                editSite(siteList.get(choice), u);
+            } else {
+                pl("that wasn't a valid number");
+                editSites(u);
+                return;
+            }
+        } catch (NumberFormatException e) {
             pl("that wasn't a valid number");
             editSites(u);
+            return;
         }
+
         editUser(u);
     }
 
@@ -180,8 +251,15 @@ public class Main {
             editUser(u);
             return;
         }
+        Site site = new Site(url);
+
         pl("Enter this Site's scan frequency - in seconds");
-        int scanFrequency = scan.nextInt();
+        String scanFrequency = scan.next();
+        if (scanFrequency.equals("exit")) {
+            editUser(u);
+            return;
+        }
+        site.setScanFrequency(scanFrequency);
 
         pl("Enter the number corresponding to the site's type");
         int i = 0;
@@ -189,16 +267,60 @@ public class Main {
             pl(i + ": " + se.toString());
             i++;
         }
-        SiteEnum siteEnum = SiteEnum.values()[0];
-        int choice = scan.nextInt();
-        if (choice < SiteEnum.values().length) {
-            siteEnum = SiteEnum.values()[choice];
-        } else {
+
+        String input = scan.next();
+        if ("exit".equals(input)) {
+            editUser(u);
+            return;
+        }
+        try {
+            int choice = Integer.parseInt(input);
+            if (choice < SiteEnum.values().length) {
+                SiteEnum siteEnum = SiteEnum.values()[choice];
+                site.setSiteEnum(siteEnum);
+            } else {
+                pl("that wasn't a valid number");
+                addSite(u);
+                return;
+            }
+        } catch (NumberFormatException e) {
             pl("that wasn't a valid number");
             addSite(u);
+            return;
         }
 
-        u.addSite(new Site(siteEnum, url, scanFrequency));
+        u.addSite(site);
+        SaveHelper.save(uc);
+        editUser(u);
+    }
+
+    private static void deleteSites(User u) {
+        pl("Please enter the number corresponding to the site you would like to delete.");
+        int i = 0;
+        for (Site s: u.getSites()) {
+            pl(i + ": " + s.toString());
+            i++;
+        }
+        String input = scan.next();
+        if ("exit".equals(input)) {
+            editUser(u);
+            return;
+        }
+        try {
+            int choice = Integer.parseInt(input);
+            if (choice < u.getSites().size()) {
+                u.removeSite(choice);
+            } else {
+                pl("that wasn't a valid user number");
+                deleteSites(u);
+                return;
+            }
+        } catch (NumberFormatException e) {
+            pl("that wasn't a valid user number");
+            deleteSites(u);
+            return;
+        }
+
         SaveHelper.save(uc);
         editUser(u);
     }
@@ -210,22 +332,34 @@ public class Main {
         pl("1: url");
         pl("2: scan frequency");
 
-        int choice = scan.nextInt();
-
-        switch(choice) {
-            case 0:
-                editSiteEnum(s, u);
-                break;
-            case 1:
-                editSiteUrl(s, u);
-                break;
-            case 2:
-                editSiteScanFrequency(s, u);
-                break;
-            default:
-                pl("Please enter one of the numbers listed above");
-                editSite(s, u);
+        String input = scan.next();
+        if ("exit".equals(input)) {
+            editSites(u);
+            return;
         }
+        try {
+            int choice = Integer.parseInt(input);
+            switch(choice) {
+                case 0:
+                    editSiteEnum(s, u);
+                    break;
+                case 1:
+                    editSiteUrl(s, u);
+                    break;
+                case 2:
+                    editSiteScanFrequency(s, u);
+                    break;
+                default:
+                    pl("Please enter one of the numbers listed above");
+                    editSite(s, u);
+                    return;
+            }
+        } catch (NumberFormatException e) {
+            pl("that wasn't a valid number");
+            editSite(s, u);
+            return;
+        }
+
         editSites(u);
     }
 
@@ -236,14 +370,28 @@ public class Main {
             pl(i + ": " + se.toString());
             i++;
         }
-        int choice = scan.nextInt();
-        if (choice < SiteEnum.values().length) {
-            s.setSiteEnum(SiteEnum.values()[choice]);
-            SaveHelper.save(uc);
-        } else {
+
+        String input = scan.next();
+        if ("exit".equals(input)) {
+            editSite(s, u);
+            return;
+        }
+        try {
+            int choice = Integer.parseInt(input);
+            if (choice < SiteEnum.values().length) {
+                s.setSiteEnum(SiteEnum.values()[choice]);
+                SaveHelper.save(uc);
+            } else {
+                pl("that wasn't a valid number");
+                editSiteEnum(s, u);
+                return;
+            }
+        } catch (NumberFormatException e) {
             pl("that wasn't a valid number");
             editSiteEnum(s, u);
+            return;
         }
+
         editSite(s, u);
     }
 
@@ -252,6 +400,7 @@ public class Main {
         String url = scan.next();
         if (url.equals("exit")) {
             editSite(s, u);
+            return;
         } else {
             s.setUrl(url);
             SaveHelper.save(uc);
@@ -261,10 +410,60 @@ public class Main {
 
     private static void editSiteScanFrequency(Site s, User u) {
         pl("Please enter the site's new scan frequency - in seconds (enter 'exit' to go back to the previous menu)");
-        int scanFrequency = scan.nextInt();
-        s.setScanFrequency(scanFrequency);
-        editSite(s, u);
+        String input = scan.next();
+        if ("exit".equals(input)) {
+            editSite(s, u);
+            return;
+        }
+        try {
+            int choice = Integer.parseInt(input);
+            if (choice < SiteEnum.values().length) {
+                SiteEnum siteEnum = SiteEnum.values()[choice];
+                s.setSiteEnum(siteEnum);
+            } else {
+                pl("that wasn't a valid number");
+                editSiteScanFrequency(s, u);
+                return;
+            }
+        } catch (NumberFormatException e) {
+            pl("that wasn't a valid number");
+            editSiteScanFrequency(s, u);
+            return;
+        }
+
         SaveHelper.save(uc);
+        editSite(s, u);
+    }
+
+    private static void deleteUsers() {
+        pl("Please enter the number corresponding to the user you would like to delete.");
+        int i = 0;
+        for (User u: uc.getUserList()) {
+            pl(i + ": " + u.getFullName());
+            i++;
+        }
+        String input = scan.next();
+        if ("exit".equals(input)) {
+            printMainOptions();
+            return;
+        }
+        try {
+            int choice = Integer.parseInt(input);
+            if (choice < uc.getUserList().size()) {
+                uc.removeUser(choice);
+            } else {
+                pl("that wasn't a valid user number");
+                deleteUsers();
+                return;
+            }
+        } catch (NumberFormatException e) {
+            pl("that wasn't a valid user number");
+            deleteUsers();
+            return;
+        }
+
+        SaveHelper.save(uc);
+        printMainOptions();
     }
 
     private static void pl(String s) {
