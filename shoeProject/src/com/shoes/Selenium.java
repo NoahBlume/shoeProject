@@ -1,13 +1,17 @@
 package com.shoes;
 
-import org.seleniumhq.selenium.*;
-
+// First option
+// import org.openqa.selenium.*;
+// Second option
+// import org.seleniumhq.selenium.*;
 
 public class Scraper {
 
+
+    // Class Variables
+
     // Default to a Firefox web browser.
     public WebDriver m_driver = new FirefoxDriver();
-
     // Default to Footlocker.
     public string m_site = "http://www.footlocker.com";
 
@@ -18,17 +22,32 @@ public class Scraper {
 
     }
 
-    public Scraper(stringn site) {
+    public Scraper(string site) {
         m_site = site;
 
     }
 
-    public Scraper(stringn site, Webdriver driver) {
+    public Scraper(string site, Webdriver driver) {
         m_site = site;
         m_driver = driver;
     }
 
     public Scrape() {
-        driver.get("http://www.google.com");
+        // Begin scrape
+        m_driver.get(m_site);
+
+        // Navigation Example
+        //m_driver.findElement(By.name("login")).click();
+
+        // Refresh Example
+        m_driver.navigate().refresh();
+
+        // Thread safe exit page not windows
+        // End scrape
+        m_driver.close();
+
+        // None thread safe
+        // m_driver.quit();
+
     }
 }
