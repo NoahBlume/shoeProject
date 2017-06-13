@@ -4,12 +4,18 @@ import java.util.List;
 import java.util.Scanner;
 
 
+
+
 public class Main {
     private static Scanner scan = new Scanner(System.in);
     private static UserContainer uc;
 
     public static void main(String[] args) {
-	// write your code here
+	    // write your code here
+        // writing my code here
+        Scaper scrappyDoo = new Scaper();
+        scrappyDoo.Scrape();
+
         uc = SaveHelper.load();
         if (uc == null) {
             uc = UserContainer.getInstance();
