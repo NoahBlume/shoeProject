@@ -1,10 +1,5 @@
-package com.shoes;
-
 import java.util.List;
 import java.util.Scanner;
-
-
-
 
 public class Main {
     private static Scanner scan = new Scanner(System.in);
@@ -13,8 +8,8 @@ public class Main {
     public static void main(String[] args) {
 	    // write your code here
         // writing my code here
-        Scaper scrappyDoo = new Scaper();
-        scrappyDoo.Scrape();
+        Scraper scrappyDoo = new Scraper();
+        scrappyDoo.scrape();
 
         uc = SaveHelper.load();
         if (uc == null) {

@@ -1,5 +1,3 @@
-package com.shoes;
-
 import java.io.Serializable;
 
 /**
