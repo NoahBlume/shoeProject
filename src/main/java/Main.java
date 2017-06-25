@@ -1,3 +1,4 @@
+import java.text.DecimalFormat;
 import java.util.List;
 import java.util.Scanner;
 
@@ -6,15 +7,16 @@ public class Main {
     private static UserContainer uc;
 
     public static void main(String[] args) {
-	    // write your code here
-        // writing my code here
-        Scraper scrappyDoo = new Scraper();
-        scrappyDoo.scrape();
-
         uc = SaveHelper.load();
         if (uc == null) {
             uc = UserContainer.getInstance();
         }
+
+
+        List<User> ul = uc.getUserList();
+        Scraper scrappyDoo = new Scraper();
+        scrappyDoo.scrape(ul.get(0), ul.get(0).getSites().get(0));
+
         printGreeting();
     }
 
@@ -125,10 +127,12 @@ public class Main {
         pl("What would you like to edit (enter 'exit' to go back to the main menu)");
         pl("0: name");
         pl("1: email");
-        pl("2: credit card number");
-        pl("3: edit site");
-        pl("4: add site");
-        pl("5: delete site");
+        pl("2: phone");
+        pl("3: credit card info");
+        pl("4: address info");
+        pl("5: edit site");
+        pl("6: add site");
+        pl("7: delete site");
 
         String input = scan.next();
         if ("exit".equals(input)) {
@@ -145,15 +149,21 @@ public class Main {
                     editEmail(u);
                     break;
                 case 2:
-                    editCcNumber(u);
+                    editPhone(u);
                     break;
                 case 3:
-                    editSites(u);
+                    editCreditCard(u);
                     break;
                 case 4:
-                    addSite(u);
+                    editAddress(u);
                     break;
                 case 5:
+                    editSites(u);
+                    break;
+                case 6:
+                    addSite(u);
+                    break;
+                case 7:
                     deleteSites(u);
                     break;
                 default:
@@ -201,13 +211,84 @@ public class Main {
         }
     }
 
-    private static void editCcNumber(User u) {
-        pl("Please enter the user's new credit card number (enter 'exit' to go back to the previous menu)");
+    private static void editPhone(User u) {
+        pl("Please enter the user's new phone number (10 digits with no dashes)");
+        String phone = scan.next();
+        if (phone.equals("exit")) {
+            editUser(u);
+        } else {
+            u.setPhone(phone);
+            SaveHelper.save(uc);
+        }
+    }
+
+    private static void editCreditCard(User u) {
+        pl("Please enter the user's new credit card info (enter 'exit' to go back to the previous menu)");
+        pl("Please enter the user's new credit card number.");
         String ccNumber = scan.next();
         if (ccNumber.equals("exit")) {
             editUser(u);
         } else {
             u.setCcNumber(ccNumber);
+            SaveHelper.save(uc);
+        }
+
+        pl("Please enter the user's new credit card expiration date.(eg 05/20)");
+        String expDate = scan.next();
+        if (expDate.equals("exit")) {
+            editUser(u);
+        } else {
+            u.setCcExpirationDate(expDate);
+            SaveHelper.save(uc);
+        }
+
+        pl("Please enter the user's new credit card cvc number.");
+        String cvc = scan.next();
+        if (cvc.equals("exit")) {
+            editUser(u);
+        } else {
+            u.setCvc(cvc);
+            SaveHelper.save(uc);
+        }
+    }
+
+    private static void editAddress(User u) {
+        pl("Please enter the user's new address info (enter 'exit' to go back to the previous menu)");
+        pl("Please enter the user's new street address (eg 123 Main Street)");
+        scan.nextLine();
+        String street = scan.nextLine();
+        if (street.equals("exit")) {
+            editUser(u);
+        } else {
+            u.setStreetAddress(street);
+            SaveHelper.save(uc);
+        }
+
+        pl("Please enter the user's new zipcode");
+        String zipCode = scan.next();
+        if (zipCode.equals("exit")) {
+            editUser(u);
+        } else {
+            u.setZipCode(zipCode);
+            SaveHelper.save(uc);
+        }
+
+        pl("Please enter the user's new city");
+        scan.nextLine();
+        String city = scan.nextLine();
+        if (city.equals("exit")) {
+            editUser(u);
+        } else {
+            u.setCity(city);
+            SaveHelper.save(uc);
+        }
+
+        pl("Please enter the user's new state");
+        String state = scan.next();
+        if (state.equals("exit")) {
+            editUser(u);
+        } else {
+            u.setState(state);
             SaveHelper.save(uc);
         }
     }
@@ -290,6 +371,63 @@ public class Main {
             return;
         }
 
+/*
+        private String shoeSize;
+        private String sku;
+        private int quantity = 1;
+        private int scanFrequency = 10; //seconds
+        private String sitePassword;
+        private String siteUsername; //or email
+*/
+        pl("please enter the shoe size you want to buy");
+        String size = scan.next();
+        if ("exit".equals(size)) {
+            editUser(u);
+            return;
+        }
+        try {
+            double choice = Double.parseDouble(size);
+            DecimalFormat df = new DecimalFormat("00.0");
+            String formattedSize = df.format(choice);
+            site.setShoeSize(formattedSize);
+        } catch (NumberFormatException e) {
+            pl("that wasn't a valid number");
+            addSite(u);
+            return;
+        }
+
+        pl("please enter the number of shoes you want to buy");
+        String quantity = scan.next();
+        if (quantity.equals("exit")) {
+            editUser(u);
+            return;
+        }
+        site.setQuantity(quantity);
+
+        pl("Enter the shoe's sku");
+        String sku = scan.next();
+        if (sku.equals("exit")) {
+            editUser(u);
+            return;
+        }
+        site.setSku(sku);
+
+        pl("please enter the username for the site");
+        String username = scan.next();
+        if ("exit".equals(username)) {
+            editUser(u);
+            return;
+        }
+        site.setSiteUsername(username);
+
+        pl("please enter the password for the site");
+        String password = scan.next();
+        if ("exit".equals(password)) {
+            editUser(u);
+            return;
+        }
+        site.setSitePassword(password);
+
         u.addSite(site);
         SaveHelper.save(uc);
         editUser(u);
@@ -332,6 +470,11 @@ public class Main {
         pl("0: Site type"); //site enum
         pl("1: url");
         pl("2: scan frequency");
+        pl("3: site username");
+        pl("4: site password");
+        pl("5: sku");
+        pl("6: quantity");
+        pl("7: shoe size");
 
         String input = scan.next();
         if ("exit".equals(input)) {
@@ -349,6 +492,21 @@ public class Main {
                     break;
                 case 2:
                     editSiteScanFrequency(s, u);
+                    break;
+                case 3:
+                    editSiteUsername(s, u);
+                    break;
+                case 4:
+                    editSitePassword(s, u);
+                    break;
+                case 5:
+                    editSiteSku(s, u);
+                    break;
+                case 6:
+                    editSiteQuantity(s, u);
+                    break;
+                case 7:
+                    editSiteShoeSize(s, u);
                     break;
                 default:
                     pl("Please enter one of the numbers listed above");
@@ -411,28 +569,87 @@ public class Main {
 
     private static void editSiteScanFrequency(Site s, User u) {
         pl("Please enter the site's new scan frequency - in seconds (enter 'exit' to go back to the previous menu)");
-        String input = scan.next();
-        if ("exit".equals(input)) {
+        String frequency = scan.next();
+        if ("exit".equals(frequency)) {
+            editSite(s, u);
+            return;
+        } else {
+            s.setScanFrequency(frequency);
+            SaveHelper.save(uc);
+        }
+        editSite(s, u);
+    }
+
+    private static void editSiteUsername(Site s, User u) {
+        pl("Please enter the site's new login username (enter 'exit' to go back to the previous menu)");
+        String username = scan.next();
+        if ("exit".equals(username)) {
+            editSite(s, u);
+            return;
+        } else {
+            s.setSiteUsername(username);
+            SaveHelper.save(uc);
+        }
+        editSite(s, u);
+    }
+
+    private static void editSitePassword(Site s, User u) {
+        pl("Please enter the site's new login password (enter 'exit' to go back to the previous menu)");
+        String password = scan.next();
+        if ("exit".equals(password)) {
+            editSite(s, u);
+            return;
+        } else {
+            s.setSitePassword(password);
+            SaveHelper.save(uc);
+        }
+        editSite(s, u);
+    }
+
+    private static void editSiteSku(Site s, User u) {
+        pl("Please enter the site's new sku (enter 'exit' to go back to the previous menu)");
+        String sku = scan.next();
+        if ("exit".equals(sku)) {
+            editSite(s, u);
+            return;
+        } else {
+            s.setSku(sku);
+            SaveHelper.save(uc);
+        }
+        editSite(s, u);
+    }
+
+    private static void editSiteQuantity(Site s, User u) {
+        pl("Please enter the quantity of shoes wanted (enter 'exit' to go back to the previous menu)");
+        String quantity = scan.next();
+        if ("exit".equals(quantity)) {
+            editSite(s, u);
+            return;
+        } else {
+            s.setQuantity(quantity);
+            SaveHelper.save(uc);
+        }
+        editSite(s, u);
+    }
+
+    private static void editSiteShoeSize(Site s, User u) {
+        pl("Please enter the size of shoe you want (enter 'exit' to go back to the previous menu)");
+        String size = scan.next();
+        if ("exit".equals(size)) {
             editSite(s, u);
             return;
         }
         try {
-            int choice = Integer.parseInt(input);
-            if (choice < SiteEnum.values().length) {
-                SiteEnum siteEnum = SiteEnum.values()[choice];
-                s.setSiteEnum(siteEnum);
-            } else {
-                pl("that wasn't a valid number");
-                editSiteScanFrequency(s, u);
-                return;
-            }
+            double choice = Double.parseDouble(size);
+            DecimalFormat df = new DecimalFormat("00.0");
+            String formattedSize = df.format(choice);
+            s.setShoeSize(formattedSize);
+            SaveHelper.save(uc);
         } catch (NumberFormatException e) {
             pl("that wasn't a valid number");
-            editSiteScanFrequency(s, u);
+            editSiteShoeSize(s, u);
             return;
         }
-
-        SaveHelper.save(uc);
         editSite(s, u);
     }
 

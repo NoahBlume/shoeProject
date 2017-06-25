@@ -8,6 +8,12 @@ import java.io.ObjectOutputStream;
  */
 public class SaveHelper {
 
+    /**
+     *
+     * WE SHOULD USE JSOUP FOR THE STOCK CHECKING PART (then create selenium instance to buy the shoe)
+     *
+     */
+
     public static void save(UserContainer uc) {
         try {
             // Write to disk with FileOutputStream
