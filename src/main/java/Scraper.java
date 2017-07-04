@@ -4,7 +4,10 @@ import org.openqa.selenium.WebDriver;
 import org.openqa.selenium.firefox.FirefoxDriver;
 import org.openqa.selenium.*;
 
+import java.awt.*;
+import java.awt.event.KeyEvent;
 import java.util.concurrent.TimeUnit;
+import java.util.List;
 
 public class Scraper {
 
@@ -13,6 +16,7 @@ public class Scraper {
 
     // Default to a Firefox web browser.
     public WebDriver m_driver;
+    public Keyboard keyboard;
     // Default to Footlocker.
     public String m_site = "http://www.footlocker.com";
 
@@ -24,6 +28,13 @@ public class Scraper {
         m_site = "http://www.footlocker.com";
         System.setProperty("webdriver.gecko.driver","drivers/geckodriver/geckodriver.exe");
         m_driver = new FirefoxDriver();
+        try {
+            keyboard = new Keyboard();
+        } catch (Exception e) {
+            System.out.println("failed to instantiate keyboard");
+            System.out.println(e.getMessage());
+            e.printStackTrace();
+        }
     }
 
     public Scraper(String site) {
@@ -49,24 +60,79 @@ public class Scraper {
             WebElement sizeSelectionContainer = productForm.findElement(By.id("size_selection_container"));
             WebElement sizeSelectionList = sizeSelectionContainer.findElement(By.id("size_selection_list"));
             WebElement yourSize = sizeSelectionList.findElement(By.xpath("//a[@value='07.5']"));
-            By locator = By.cssSelector("a[value='07.5']");
+            By locator = By.cssSelector("a[value='08.5']");
             WebElement theButton = m_driver.findElement(locator);
             theButton.sendKeys(Keys.ENTER);
-            //theButton.click();
             m_driver.findElement(By.id("pdp_addtocart_button")).click();
             m_driver.findElement(By.id("header_cart_button")).click();
-            m_driver.manage().timeouts().implicitlyWait(2, TimeUnit.SECONDS);
             m_driver.findElement(By.id("cart_checkout_button")).click();
+            Thread.sleep(5000);
 
-            m_driver.manage().timeouts().implicitlyWait(4, TimeUnit.SECONDS);
+            m_driver.findElement(By.xpath("//label[contains(text(), 'First Name')]")).click();
+            //keyboard.type("Caleb");
+            m_driver.findElement(By.id("billFirstName")).sendKeys(u.getFirstName());
+            //keyboard.type('\t');
 
-            m_driver.findElement(By.id("billFirstName")).click();
-            m_driver.findElement(By.id("billFirstName")).sendKeys("Caleb");
-            //m_driver.findElement(By.id("billlName")).sendKeys(u.getLastName());
+           // m_driver.findElement(By.xpath("//label[contains(text(), 'Last Name')]")).click();
+            m_driver.findElement(By.id("billLastName")).sendKeys(u.getLastName());
+            //keyboard.type('\t');
 
+            //.findElement(By.xpath("//label[contains(text(), 'Street')]")).click();
+            m_driver.findElement(By.id("billAddress1")).sendKeys(u.getStreetAddress());
+            //keyboard.type('\t');
+
+            //m_driver.findElement(By.xpath("//label[contains(text(), 'Zip Code')]")).click();
+            m_driver.findElement(By.id("billPostalCode")).sendKeys(u.getZipCode());
+           // keyboard.type('\t');
+
+            //m_driver.findElement(By.xpath("//label[contains(text(), 'City')]")).click();
+            m_driver.findElement(By.id("billCity")).sendKeys(u.getCity());
+           // keyboard.type('\t');
+
+            //m_driver.findElement(By.xpath("//label[contains(text(), 'State')]")).click();
+            m_driver.findElement(By.id("billState")).sendKeys(u.getState());
+            //keyboard.type('\t');
+
+            //m_driver.findElement(By.xpath("//label[contains(text(), 'Phone')]")).click();
+            m_driver.findElement(By.id("billHomePhone")).sendKeys(u.getPhone());
+            //keyboard.type('\t');
+
+            //m_driver.findElement(By.xpath("//label[contains(text(), 'Email')]")).click();
+            m_driver.findElement(By.id("billEmailAddress")).sendKeys(u.getEmail());
+
+            Thread.sleep(2000);
+            m_driver.findElement(By.id("billPaneContinue")).click();
+            //inventoryCheck_loading
+            List<WebElement> loadingScreen = m_driver.findElements(By.id("inventoryCheck_loading"));
+            while(loadingScreen.size() > 0) {
+                System.out.println("processing...");
+                Thread.sleep(1000);
+                loadingScreen = m_driver.findElements(By.id("inventoryCheck_loading"));
+            }
+
+            Thread.sleep(1000);
+            System.out.println("probably about to fuck up");
+            m_driver.findElement(By.id("shipMethodPaneContinue")).click();
+            System.out.println("got here");
+            //m_driver.findElement(By.xpath("//span[contains(@class, 'newCC_currCC')]")).click();
+            m_driver.findElement(By.xpath("//span[contains(text(), '3. Promo Code (optional)')]")).click();
+            for (int i = 0; i < 20; i++) {
+                keyboard.type('\t');
+            }
+            System.out.println("clicked it?");
+            m_driver.findElement(By.id("CardNumber")).sendKeys(u.getCcNumber());
+            String[] ccDates = u.getCcExpirationDate().split("/");
+            m_driver.findElement(By.id("CardExpireDateMM")).sendKeys(ccDates[0]);
+            m_driver.findElement(By.id("CardExpireDateYY")).sendKeys(ccDates[1]);
+
+            m_driver.findElement(By.id("CardCCV")).sendKeys(u.getCvc());
+
+            Thread.sleep(1000);
+            m_driver.findElement(By.id("payMethodPaneContinue")).click();
         } catch(Exception e) {
             System.out.println("shit fucked up.");
             System.out.println(e.getMessage());
+            e.printStackTrace();
         }
 
         // Refresh Example

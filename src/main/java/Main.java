@@ -14,6 +14,11 @@ public class Main {
 
 
         List<User> ul = uc.getUserList();
+        StockChecker sc = new StockChecker();
+        sc.checkStock(ul.get(0), ul.get(0).getSites().get(0));
+
+        System.out.println("-----finished jsoup stuff-----");
+
         Scraper scrappyDoo = new Scraper();
         scrappyDoo.scrape(ul.get(0), ul.get(0).getSites().get(0));
 
@@ -195,7 +200,7 @@ public class Main {
         if (lastName.equals("exit")) {
             editUser(u);
         } else {
-            u.setFirstName(lastName);
+            u.setLastName(lastName);
             SaveHelper.save(uc);
         }
     }
@@ -284,7 +289,7 @@ public class Main {
         }
 
         pl("Please enter the user's new state");
-        String state = scan.next();
+        String state = scan.nextLine();
         if (state.equals("exit")) {
             editUser(u);
         } else {
