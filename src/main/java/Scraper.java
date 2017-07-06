@@ -52,6 +52,7 @@ public class Scraper {
         // Begin scrape
         String url = s.getUrl();
         m_driver.get(url);
+        m_driver.manage().window().maximize();
 
         try {
             m_driver.findElement(By.id("current_size_display")).click();
@@ -63,10 +64,13 @@ public class Scraper {
             By locator = By.cssSelector("a[value='08.5']");
             WebElement theButton = m_driver.findElement(locator);
             theButton.sendKeys(Keys.ENTER);
+            Thread.sleep(1000);
             m_driver.findElement(By.id("pdp_addtocart_button")).click();
+            Thread.sleep(3000);
             m_driver.findElement(By.id("header_cart_button")).click();
+            Thread.sleep(1000);
             m_driver.findElement(By.id("cart_checkout_button")).click();
-            Thread.sleep(5000);
+            Thread.sleep(8000);
 
             m_driver.findElement(By.xpath("//label[contains(text(), 'First Name')]")).click();
             //keyboard.type("Caleb");
@@ -129,6 +133,11 @@ public class Scraper {
 
             Thread.sleep(1000);
             m_driver.findElement(By.id("payMethodPaneContinue")).click();
+
+            Thread.sleep(3000);
+            m_driver.findElement(By.xpath("//label[@for='orderReviewPaneBillSubscribeEmail']")).click();
+
+            //m_driver.findElement(By.id("orderReviewPaneBillSubscribeEmail")).sendKeys(" ");
         } catch(Exception e) {
             System.out.println("shit fucked up.");
             System.out.println(e.getMessage());
