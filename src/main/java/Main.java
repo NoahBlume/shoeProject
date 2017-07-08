@@ -14,13 +14,13 @@ public class Main {
 
 
         List<User> ul = uc.getUserList();
-        StockChecker sc = new StockChecker();
-        sc.checkStock(ul.get(0), ul.get(0).getSites().get(0));
+       // StockChecker sc = new StockChecker();
+       // sc.checkStock(ul.get(0), ul.get(0).getSites().get(0));
 
         System.out.println("-----finished jsoup stuff-----");
 
         Scraper scrappyDoo = new Scraper();
-        scrappyDoo.scrape(ul.get(0), ul.get(0).getSites().get(0));
+        scrappyDoo.checkStock(ul.get(0), ul.get(0).getSites().get(0));
 
         printGreeting();
     }

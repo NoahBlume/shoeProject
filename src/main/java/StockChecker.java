@@ -1,5 +1,7 @@
 import org.jsoup.Jsoup;
 import org.jsoup.nodes.Document;
+import org.jsoup.nodes.Element;
+import org.jsoup.select.Elements;
 
 
 /**
@@ -23,6 +25,11 @@ public class StockChecker {
             //Document doc = Jsoup.parse(htmlString);
             //String title = doc.title();
             String body = doc.body().text();
+            Element sizeSelectionList = doc.getElementById("size_selection_list");
+            System.out.println(sizeSelectionList.outerHtml());
+            Elements chosenSize = sizeSelectionList.getElementsByAttributeValue("value", "07.5");
+            Elements cs = sizeSelectionList.select("a.grid_size[value='07.5']");
+            System.out.println("chosen size: " + cs.get(0));
 
             System.out.printf("Title: %s%n", title);
             System.out.printf("Body: %s", body);
