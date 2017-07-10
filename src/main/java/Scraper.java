@@ -97,7 +97,7 @@ class Scraper {
                     String endingUrl = m_driver.getCurrentUrl();
                     while (startingUrl.equals(endingUrl)) {
                         System.out.println("one");
-                        if(m_driver.findElement(By.id("header_cart_button"))!= null) {
+                        if(m_driver.findElements(By.id("header_cart_button")).size() > 0) {
                             m_driver.findElement(By.id("header_cart_button")).click();
                         }
                         System.out.println("uno");
@@ -105,7 +105,7 @@ class Scraper {
                     }
                     clickedCart = true;
                 }
-            } catch(NoSuchElementException | TimeoutException | ElementNotInteractableException e){
+            } catch (NoSuchElementException | TimeoutException | ElementNotInteractableException e){
                 Thread.sleep(250);
                 System.out.println("0 - trying again...");
             }
@@ -131,6 +131,7 @@ class Scraper {
                 WebElement checkoutButton = (new WebDriverWait(m_driver, 3))
                         .until(ExpectedConditions.presenceOfElementLocated(By.id("cart_checkout_button")));
                 checkoutButton.click();
+                quantityCheck = true;
             } catch (NoSuchElementException | TimeoutException | ElementNotInteractableException e) {
                 Thread.sleep(250);
                 System.out.println("0.5 - trying again...");
