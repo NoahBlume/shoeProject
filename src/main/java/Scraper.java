@@ -121,10 +121,10 @@ class Scraper {
             try {
                 //m_driver.findElement(By.xpath("//id[contains(text(), 'quantity_901136208')]")).click();
                 //m_driver.findElement(By.xpath("//id[contains(text(), 'quantity_901136208')]")).sendKeys("1");
-                if (!m_driver.findElement(By.className("quantity")).getAttribute("value").contains("1")) {
+                if (!m_driver.findElement(By.className("quantity")).getAttribute("value").equals("1")) {
                     m_driver.findElement(By.id("quantity")).sendKeys("1");
                     m_driver.findElement(By.xpath("//name[contains(text(), 'quantity')]")).click();
-                    quantityCheck = true;
+
                 }
                 m_driver.findElement(By.xpath("//a[contains(text(), 'Update')]")).click();
 
