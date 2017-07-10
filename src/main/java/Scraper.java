@@ -107,6 +107,7 @@ public class Scraper {
     }
 
     private void enterAddress(User u, Site s) throws Exception {
+        boolean statePicked = false;
         boolean infoEntered = false;
         while(!infoEntered) {
             try {
@@ -142,7 +143,10 @@ public class Scraper {
                 }
 
                 try {
-                    m_driver.findElement(By.xpath("//select[@id='billState']/option[contains(text(), '" + u.getState() + "')]")).click();
+                    if (!statePicked) {
+                        m_driver.findElement(By.xpath("//select[@id='billState']/option[contains(text(), '" + u.getState() + "')]")).click();
+                        statePicked = true;
+                    }
                 } catch (Exception e) {
                     System.out.println("User's state is spelled incorrectly");
                     return;
