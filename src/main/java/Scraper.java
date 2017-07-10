@@ -88,29 +88,28 @@ public class Scraper {
         boolean clickedCart = false;
         while (!addedToCart) {
             try {
-
-                    if (m_driver.findElement(By.id("header_cart_count")).getText() != "1" && !addedToCart) {
-                        m_driver.findElement(By.id("current_size_display")).click();
-                        By locator = By.cssSelector("a[value='08.5']");
-                        WebElement theButton = m_driver.findElement(locator);
-                        theButton.sendKeys(Keys.ENTER);
-                        m_driver.findElement(By.id("pdp_addtocart_button")).click();
-                        addedToCart = true;
-                    }
-                    if (!clickedCart) {
-                        System.out.println("true");
-                        String startingUrl = m_driver.getCurrentUrl();
-                        String endingUrl = m_driver.getCurrentUrl();
-                        while (startingUrl == endingUrl) {
-                            System.out.println("one");
-                            if(m_driver.findElement(By.id("header_cart_button"))!= null) {
-                                m_driver.findElement(By.id("header_cart_button")).click();
-                            }
-                            System.out.println("uno");
-                            endingUrl = m_driver.getCurrentUrl();
+                if (m_driver.findElement(By.id("header_cart_count")).getText() != "1" && !addedToCart) {
+                    m_driver.findElement(By.id("current_size_display")).click();
+                    By locator = By.cssSelector("a[value='08.5']");
+                    WebElement theButton = m_driver.findElement(locator);
+                    theButton.sendKeys(Keys.ENTER);
+                    m_driver.findElement(By.id("pdp_addtocart_button")).click();
+                    addedToCart = true;
+                }
+                if (!clickedCart) {
+                    System.out.println("true");
+                    String startingUrl = m_driver.getCurrentUrl();
+                    String endingUrl = m_driver.getCurrentUrl();
+                    while (startingUrl == endingUrl) {
+                        System.out.println("one");
+                        if(m_driver.findElement(By.id("header_cart_button"))!= null) {
+                            m_driver.findElement(By.id("header_cart_button")).click();
                         }
-                        clickedCart = true;
+                        System.out.println("uno");
+                        endingUrl = m_driver.getCurrentUrl();
                     }
+                    clickedCart = true;
+                }
             } catch(NoSuchElementException | TimeoutException | ElementNotInteractableException e){
                 Thread.sleep(250);
                 System.out.println("0 - trying again...");
@@ -123,23 +122,24 @@ public class Scraper {
         System.out.println("Made it to checkout");
         Thread.sleep(250);
         boolean quantityCheck = false;
-        try {
         while(!quantityCheck) {
-            //m_driver.findElement(By.xpath("//id[contains(text(), 'quantity_901136208')]")).click();
-            //m_driver.findElement(By.xpath("//id[contains(text(), 'quantity_901136208')]")).sendKeys("1");
-            if (!m_driver.findElement(By.className("quantity")).getAttribute("value").contains("1")) {
-                m_driver.findElement(By.id("quantity")).sendKeys("1");
-                m_driver.findElement(By.xpath("//name[contains(text(), 'quantity')]")).click();
-                quantityCheck = true;
+            try {
+                //m_driver.findElement(By.xpath("//id[contains(text(), 'quantity_901136208')]")).click();
+                //m_driver.findElement(By.xpath("//id[contains(text(), 'quantity_901136208')]")).sendKeys("1");
+                if (!m_driver.findElement(By.className("quantity")).getAttribute("value").contains("1")) {
+                    m_driver.findElement(By.id("quantity")).sendKeys("1");
+                    m_driver.findElement(By.xpath("//name[contains(text(), 'quantity')]")).click();
+                    quantityCheck = true;
+                }
+                m_driver.findElement(By.xpath("//a[contains(text(), 'Update')]")).click();
+
+                WebElement checkoutButton = (new WebDriverWait(m_driver, 3))
+                        .until(ExpectedConditions.presenceOfElementLocated(By.id("cart_checkout_button")));
+                checkoutButton.click();
+            } catch (NoSuchElementException | TimeoutException | ElementNotInteractableException e) {
+                Thread.sleep(250);
+                System.out.println("0.5 - trying again...");
             }
-            m_driver.findElement(By.xpath("//a[contains(text(), 'Update')]")).click();
-        }
-        WebElement checkoutButton = (new WebDriverWait(m_driver, 3))
-                .until(ExpectedConditions.presenceOfElementLocated(By.id("cart_checkout_button")));
-        checkoutButton.click();
-        } catch(NoSuchElementException | TimeoutException | ElementNotInteractableException e){
-            Thread.sleep(250);
-            System.out.println("0.5 - trying again...");
         }
         enterAddress(u, s);
     }
