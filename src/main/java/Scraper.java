@@ -4,49 +4,44 @@ import org.openqa.selenium.WebDriver;
 import org.openqa.selenium.firefox.FirefoxDriver;
 import org.openqa.selenium.*;
 import org.openqa.selenium.support.ui.ExpectedConditions;
-import org.openqa.selenium.support.ui.Select;
 import org.openqa.selenium.support.ui.WebDriverWait;
 
-import java.awt.*;
-import java.awt.event.KeyEvent;
-import java.util.concurrent.TimeUnit;
-import java.util.List;
 
-public class Scraper {
+class Scraper {
 
 
     // Class Variables
 
     // Default to a Firefox web browser.
-    public WebDriver m_driver;
-    public Keyboard keyboard;
+    private WebDriver m_driver;
+    //private Keyboard keyboard;
     // Default to Footlocker.
-    public String m_site = "http://www.footlocker.com";
+    //private String m_site;
 
     // Will want the webscraper to go somewhere else first to get a reference header and it needs to be randomized.
     // Possibly taking a file of websites in as the references.
 
-    public Scraper() {
+    Scraper() {
         //this("http://www.footlocker.com");
-        m_site = "http://www.footlocker.com";
+        //m_site = "http://www.footlocker.com";
         System.setProperty("webdriver.gecko.driver","drivers/geckodriver/geckodriver.exe");
         m_driver = new FirefoxDriver();
-        try {
-            keyboard = new Keyboard();
-        } catch (Exception e) {
-            System.out.println("failed to instantiate keyboard");
-            System.out.println(e.getMessage());
-            e.printStackTrace();
-        }
+//        try {
+//            keyboard = new Keyboard();
+//        } catch (Exception e) {
+//            System.out.println("failed to instantiate keyboard");
+//            System.out.println(e.getMessage());
+//            e.printStackTrace();
+//        }
     }
 
-    public Scraper(String site, WebDriver driver) {
-        m_site = site;
-        System.setProperty("webdriver.gecko.driver","drivers/geckodriver/geckodriver.exe");
-        m_driver = new FirefoxDriver();
-    }
+//    public Scraper(String site, WebDriver driver) {
+//        m_site = site;
+//        System.setProperty("webdriver.gecko.driver","drivers/geckodriver/geckodriver.exe");
+//        m_driver = new FirefoxDriver();
+//    }
 
-    public void checkStock(User u, Site s) {
+    void checkStock(User u, Site s) {
         String url = s.getUrl();
         m_driver.get(url);
         boolean inStock = false;
@@ -88,7 +83,7 @@ public class Scraper {
         boolean clickedCart = false;
         while (!addedToCart) {
             try {
-                if (m_driver.findElement(By.id("header_cart_count")).getText() != "1" && !addedToCart) {
+                if (!m_driver.findElement(By.id("header_cart_count")).getText().equals("1")) {
                     m_driver.findElement(By.id("current_size_display")).click();
                     By locator = By.cssSelector("a[value='08.5']");
                     WebElement theButton = m_driver.findElement(locator);
@@ -100,7 +95,7 @@ public class Scraper {
                     System.out.println("true");
                     String startingUrl = m_driver.getCurrentUrl();
                     String endingUrl = m_driver.getCurrentUrl();
-                    while (startingUrl == endingUrl) {
+                    while (startingUrl.equals(endingUrl)) {
                         System.out.println("one");
                         if(m_driver.findElement(By.id("header_cart_button"))!= null) {
                             m_driver.findElement(By.id("header_cart_button")).click();
@@ -326,7 +321,9 @@ public class Scraper {
     }
 
     private void purchase(User u, Site s) {
-
+        if(u != null & s!= null) {
+            System.out.println("delete me when you actually put something here");
+        }
     }
 
 
