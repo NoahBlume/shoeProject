@@ -124,9 +124,8 @@ class Scraper {
                 if (!m_driver.findElement(By.className("quantity")).getAttribute("value").equals(toString().valueOf(s.getQuantity()))) {
                     m_driver.findElement(By.id("quantity")).sendKeys(toString().valueOf(s.getQuantity()));
                     m_driver.findElement(By.xpath("//name[contains(text(), 'quantity')]")).click();
-
+                    m_driver.findElement(By.xpath("//a[contains(text(), 'Update')]")).click();
                 }
-                m_driver.findElement(By.xpath("//a[contains(text(), 'Update')]")).click();
 
                 WebElement checkoutButton = (new WebDriverWait(m_driver, 3))
                         .until(ExpectedConditions.presenceOfElementLocated(By.id("cart_checkout_button")));
