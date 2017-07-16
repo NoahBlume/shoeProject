@@ -43,28 +43,26 @@ class Scraper {
 
     void checkStock(User u, Site s) {
         String url = s.getUrl();
-        m_driver.get(url);
         boolean inStock = false;
+        while(!inStock) {
+            try {
+                m_driver.get(url);
+                WebElement selectedSize = m_driver.findElement(By.xpath("//a[contains(text(), '" + s.getShoeSize() + "')]"));
+                String sizeClass = selectedSize.getAttribute("class");
+                if (sizeClass.contains("in-stock")) {
+                    inStock = true;
+                    System.out.println("in stock");
+                } else {
+                    System.out.println("out of stock");
+                }
 
-        try {
-            WebElement selectedSize = m_driver.findElement(By.xpath("//a[contains(text(), '" + s.getShoeSize() + "')]"));
-            String sizeClass = selectedSize.getAttribute("class");
-            if (sizeClass.contains("in-stock")) {
-                inStock = true;
-                System.out.println("in stock");
-            } else {
-                System.out.println("out of stock");
+            } catch(Exception e) {
+                System.out.println("failed to check stock.");
+                System.out.println(e.getMessage());
+                e.printStackTrace();
             }
-
-        } catch(Exception e) {
-            System.out.println("failed to check stock.");
-            System.out.println(e.getMessage());
-            e.printStackTrace();
         }
-
-        if (inStock) {
-            scrape(u, s);
-        }
+        scrape(u, s);
     }
 
     private void scrape(User u, Site s) {
@@ -122,7 +120,8 @@ class Scraper {
                 //m_driver.findElement(By.xpath("//id[contains(text(), 'quantity_901136208')]")).click();
                 //m_driver.findElement(By.xpath("//id[contains(text(), 'quantity_901136208')]")).sendKeys("1");
                 if (!m_driver.findElement(By.className("quantity")).getAttribute("value").equals(toString().valueOf(s.getQuantity()))) {
-                    m_driver.findElement(By.id("quantity")).sendKeys(toString().valueOf(s.getQuantity()));
+                    m_driver.findElement(By.name("quantity")).clear();
+                    m_driver.findElement(By.name("quantity")).sendKeys(toString().valueOf(s.getQuantity()));
                     m_driver.findElement(By.xpath("//name[contains(text(), 'quantity')]")).click();
                     m_driver.findElement(By.xpath("//a[contains(text(), 'Update')]")).click();
                 }

@@ -5,21 +5,22 @@ import java.util.List;
 /**
  * Created by Mbrune on 6/10/2017.
  */
-public class UserContainer implements Serializable {
-    private static UserContainer instance = null;
+public class DataManager implements Serializable {
+    private static DataManager instance = null;
     private List<User> userList = new ArrayList<>();
+    private List<String> proxyList = new ArrayList<>();
 
-    private UserContainer() {}
+    private DataManager() {}
 
-    public static UserContainer getInstance() {
+    public static DataManager getInstance() {
         if (instance == null) {
-            instance = new UserContainer();
+            instance = new DataManager();
         }
         return instance;
     }
 
-    public static void setInstance(UserContainer instance) {
-        UserContainer.instance = instance;
+    public static void setInstance(DataManager instance) {
+        DataManager.instance = instance;
     }
 
     public void addUser(String firstName, String lastName) {
@@ -38,4 +39,10 @@ public class UserContainer implements Serializable {
     public List<User> getUserList() {
         return userList;
     }
+
+    public void addProxy(String proxy) { proxyList.add(proxy);}
+
+    public String removeProxy(int proxyIndex) { return proxyList.remove(proxyIndex); }
+
+    public List<String> getProxyList() { return proxyList; }
 }

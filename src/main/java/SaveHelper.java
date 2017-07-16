@@ -14,7 +14,7 @@ public class SaveHelper {
      *
      */
 
-    public static void save(UserContainer uc) {
+    public static void save(DataManager uc) {
         try {
             // Write to disk with FileOutputStream
             FileOutputStream f_out = new FileOutputStream("myUserContainer.data");
@@ -30,7 +30,7 @@ public class SaveHelper {
         }
     }
 
-    public static UserContainer load() {
+    public static DataManager load() {
         try {
             // Read from disk using FileInputStream
             FileInputStream f_in = new FileInputStream("myUserContainer.data");
@@ -41,13 +41,13 @@ public class SaveHelper {
             // Read an object
             Object obj = obj_in.readObject();
 
-            if (obj instanceof UserContainer)
+            if (obj instanceof DataManager)
             {
-                // Cast object to a UserContainer
-                UserContainer loadedUC = (UserContainer) obj;
+                // Cast object to a DataManager
+                DataManager loadedUC = (DataManager) obj;
 
                 System.out.println("Successfully loaded.");
-                UserContainer.setInstance(loadedUC);
+                DataManager.setInstance(loadedUC);
                 return loadedUC;
             } else {
                 System.out.println("Falied to load.");

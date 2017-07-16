@@ -4,23 +4,19 @@ import java.util.Scanner;
 
 public class Main {
     private static Scanner scan = new Scanner(System.in);
-    private static UserContainer uc;
+    private static DataManager uc;
 
     public static void main(String[] args) {
         uc = SaveHelper.load();
         if (uc == null) {
-            uc = UserContainer.getInstance();
+            uc = DataManager.getInstance();
         }
 
 
-        List<User> ul = uc.getUserList();
-       // StockChecker sc = new StockChecker();
-       // sc.checkStock(ul.get(0), ul.get(0).getSites().get(0));
+//        List<User> ul = uc.getUserList();
 
-        System.out.println("-----finished jsoup stuff-----");
-
-        Scraper scrappyDoo = new Scraper();
-        scrappyDoo.checkStock(ul.get(0), ul.get(0).getSites().get(0));
+//        Scraper scrappyDoo = new Scraper();
+//        scrappyDoo.checkStock(ul.get(0), ul.get(0).getSites().get(0));
 
         printGreeting();
     }
@@ -35,6 +31,9 @@ public class Main {
         pl("0: Add User");
         pl("1: Edit Users");
         pl("2: Delete Users");
+        pl("3: Add Proxy");
+        pl("4: Delete Proxy");
+        pl("5: Run All Bots");
 
         String input = scan.next();
         if ("exit".equals(input)) {
@@ -51,6 +50,15 @@ public class Main {
                     break;
                 case 2:
                     deleteUsers();
+                    break;
+                case 3:
+                    addProxy();
+                    break;
+                case 4:
+                    deleteProxy();
+                    break;
+                case 5:
+                    runAllBots();
                     break;
                 default:
                     pl("Please enter one of the numbers listed above");
@@ -687,6 +695,62 @@ public class Main {
 
         SaveHelper.save(uc);
         printMainOptions();
+    }
+
+    private static void addProxy() {
+        pl("Enter the new proxy in the form 'ipAddress:port' - e.g. 216.3.128.12:8080 (enter 'exit' to go back to the main menu)");
+        String proxy = scan.next();
+        if (proxy.equals("exit")) {
+            printMainOptions();
+            return;
+        }
+
+        uc.addProxy(proxy);
+        SaveHelper.save(uc);
+        printMainOptions();
+    }
+
+    private static void deleteProxy() {
+        pl("Please enter the number corresponding to the proxy you would like to delete.");
+        int i = 0;
+        for (String s: uc.getProxyList()) {
+            pl(i + ": " + s.toString());
+            i++;
+        }
+
+        String input = scan.next();
+        if ("exit".equals(input)) {
+            printMainOptions();
+            return;
+        }
+        try {
+            int choice = Integer.parseInt(input);
+            if (choice < uc.getProxyList().size()) {
+                uc.removeProxy(choice);
+            } else {
+                pl("that wasn't a valid user number");
+                deleteProxy();
+                return;
+            }
+        } catch (NumberFormatException e) {
+            pl("that wasn't a valid user number");
+            deleteProxy();
+            return;
+        }
+
+        SaveHelper.save(uc);
+        printMainOptions();
+    }
+
+    private static void runAllBots() {
+        List<User> ul = uc.getUserList();
+        Scraper scrappyDoo = new Scraper();
+        scrappyDoo.checkStock(ul.get(0), ul.get(0).getSites().get(0));
+        for (User u: uc.getUserList()) {
+            for (Site s: u.getSites()) {
+                //TODO get this to make a new thread for each selenium instance
+            }
+        }
     }
 
     private static void pl(String s) {
