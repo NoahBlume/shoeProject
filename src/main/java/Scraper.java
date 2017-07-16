@@ -127,7 +127,7 @@ class Scraper {
                     m_driver.findElement(By.xpath("//a[contains(text(), 'Update')]")).click();
                 }
 
-                WebElement checkoutButton = (new WebDriverWait(m_driver, 3))
+                WebElement checkoutButton = (new WebDriverWait(m_driver, 1))
                         .until(ExpectedConditions.presenceOfElementLocated(By.id("cart_checkout_button")));
                 checkoutButton.click();
                 quantityCheck = true;
