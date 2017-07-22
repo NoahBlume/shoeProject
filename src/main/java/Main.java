@@ -716,6 +716,8 @@ public class Main {
         for (User u: uc.getUserList()) {
             for (Site s: u.getSites()) {
                 try {
+                    Thread scraperThread = new Thread();
+                    scraperThread.start();
                     scrappyDoo.checkStock(u, s);
                 } catch (Exception e) {
                     System.out.println("Failed to check user: " + u.getFullName() + " site: " + s.getUrl());

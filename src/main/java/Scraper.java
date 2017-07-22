@@ -7,13 +7,15 @@ import org.openqa.selenium.support.ui.ExpectedConditions;
 import org.openqa.selenium.support.ui.WebDriverWait;
 
 
-class Scraper {
+class Scraper implements Runnable {
 
 
     // Class Variables
 
     // Default to a Firefox web browser.
     private WebDriver m_driver;
+    private User u;
+    private Site s;
     //private Keyboard keyboard;
     // Default to Footlocker.
     //private String m_site;
@@ -21,12 +23,19 @@ class Scraper {
     // Will want the webscraper to go somewhere else first to get a reference header and it needs to be randomized.
     // Possibly taking a file of websites in as the references.
 
-    Scraper() {
+
+    Scraper(User u, Site s) {
+        this.u = u;
+        this.s = s;
         System.setProperty("webdriver.gecko.driver","drivers/geckodriver/geckodriver.exe");
         m_driver = new FirefoxDriver();
     }
 
-    void checkStock(User u, Site s) {
+    public void run() {
+        checkStock();
+    }
+
+    void checkStock() {
         int errors = 0;
         try {
             String url = s.getUrl();
@@ -53,15 +62,15 @@ class Scraper {
                     e.printStackTrace();
                 }
             }
-            scrape(u, s);
+            scrape();
         } finally {
             m_driver.close();
         }
     }
 
-    private void scrape(User u, Site s) {
+    private void scrape() {
         try {
-            addToCart(u, s);
+            addToCart();
         } catch(Exception e) {
             System.out.println("shit fucked up.");
             System.out.println(e.getMessage());
@@ -70,7 +79,7 @@ class Scraper {
         m_driver.quit();
     }
 
-    private void addToCart(User u, Site s) throws Exception {
+    private void addToCart() throws Exception {
         boolean addedToCart = false;
         boolean clickedCart = false;
         while (!addedToCart) {
@@ -101,11 +110,11 @@ class Scraper {
                 Thread.sleep(250);
                 System.out.println("0 - trying again...");
             }
-            checkout(u, s);
+            checkout();
         }
     }
 
-    private void checkout(User u, Site s) throws Exception {
+    private void checkout() throws Exception {
         System.out.println("Made it to checkout");
         Thread.sleep(250);
         boolean quantityCheck = false;
@@ -129,10 +138,10 @@ class Scraper {
                 System.out.println("0.5 - trying again...");
             }
         }
-        enterAddress(u, s);
+        enterAddress();
     }
 
-    private void enterAddress(User u, Site s) throws Exception {
+    private void enterAddress() throws Exception {
         boolean statePicked = false;
         boolean infoEntered = false;
         while(!infoEntered) {
@@ -193,10 +202,10 @@ class Scraper {
                 System.out.println("1 - trying again...");
             }
         }
-        submitAddressInfo(u, s);
+        submitAddressInfo();
     }
 
-    private void submitAddressInfo(User u, Site s) throws Exception {
+    private void submitAddressInfo() throws Exception {
         boolean billPaneContinueClicked = false;
         boolean processed = false;
         while(!billPaneContinueClicked || !processed) {
@@ -210,7 +219,7 @@ class Scraper {
                 } else if (m_driver.findElements(By.id("address_verification_edit_address_button")).size() > 0
                         && m_driver.findElement(By.id("address_verification_edit_address_button")).isDisplayed()) {
                     m_driver.findElement(By.id("address_verification_edit_address_button")).click();
-                    enterAddress(u, s);
+                    enterAddress();
                     return;
                 } else if (m_driver.findElement(By.id("billEmailAddress")).isDisplayed()) {
 //                    m_driver.findElement(By.xpath("//label[contains(text(), 'Email')]")).click();
@@ -230,10 +239,10 @@ class Scraper {
                 System.out.println("2 - trying again...");
             }
         }
-        selectShipping(u, s);
+        selectShipping();
     }
 
-    private void selectShipping(User u, Site s) throws Exception {
+    private void selectShipping() throws Exception {
         boolean shipMethodContinueClicked = false;
         while(!shipMethodContinueClicked) {
             try {
@@ -254,10 +263,10 @@ class Scraper {
                 e.printStackTrace();
             }
         }
-        enterCreditCard(u, s);
+        enterCreditCard();
     }
 
-    private void enterCreditCard(User u, Site s) throws Exception {
+    private void enterCreditCard() throws Exception {
         boolean ccInfoEntered = false;
         while(!ccInfoEntered) {
             try {
@@ -290,10 +299,10 @@ class Scraper {
                 e.printStackTrace();
             }
         }
-        paymentSubmit(u, s);
+        paymentSubmit();
     }
 
-    private void paymentSubmit(User u, Site s) throws Exception {
+    private void paymentSubmit() throws Exception {
         boolean submitted = false;
         while(!submitted) {
             try {
@@ -305,10 +314,10 @@ class Scraper {
                 System.out.println("5 - trying again...");
             }
         }
-        unsubscribe(u, s);
+        unsubscribe();
     }
 
-    private void unsubscribe(User u, Site s) throws Exception {
+    private void unsubscribe() throws Exception {
         boolean unsubClicked = false;
         while(!unsubClicked) {
             try {
