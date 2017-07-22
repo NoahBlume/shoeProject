@@ -80,6 +80,7 @@ class Scraper implements Runnable {
     }
 
     private void addToCart() throws Exception {
+        int failCount = 0;
         boolean addedToCart = false;
         boolean clickedCart = false;
         while (!addedToCart) {
@@ -109,12 +110,19 @@ class Scraper implements Runnable {
             } catch (NoSuchElementException | TimeoutException | ElementNotInteractableException e){
                 Thread.sleep(250);
                 System.out.println("0 - trying again...");
+                failCount++;
+                if(failCount == 50) {
+                    // restart thread.
+                    checkStock();
+                    return;
+                }
             }
             checkout();
         }
     }
 
     private void checkout() throws Exception {
+        int failCount = 0;
         System.out.println("Made it to checkout");
         Thread.sleep(250);
         boolean quantityCheck = false;
@@ -136,12 +144,19 @@ class Scraper implements Runnable {
             } catch (NoSuchElementException | TimeoutException | ElementNotInteractableException e) {
                 Thread.sleep(250);
                 System.out.println("0.5 - trying again...");
+                failCount++;
+                if(failCount == 50) {
+                    // restart thread.
+                    checkStock();
+                    return;
+                }
             }
         }
         enterAddress();
     }
 
     private void enterAddress() throws Exception {
+        int failCount = 0;
         boolean statePicked = false;
         boolean infoEntered = false;
         while(!infoEntered) {
@@ -200,12 +215,19 @@ class Scraper implements Runnable {
                 infoEntered = false;
                 Thread.sleep(250);
                 System.out.println("1 - trying again...");
+                failCount++;
+                if(failCount == 50) {
+                    // restart thread.
+                    checkStock();
+                    return;
+                }
             }
         }
         submitAddressInfo();
     }
 
     private void submitAddressInfo() throws Exception {
+        int failCount = 0;
         boolean billPaneContinueClicked = false;
         boolean processed = false;
         while(!billPaneContinueClicked || !processed) {
@@ -237,12 +259,19 @@ class Scraper implements Runnable {
                 billPaneContinueClicked = false;
                 Thread.sleep(250);
                 System.out.println("2 - trying again...");
+                failCount++;
+                if(failCount == 50) {
+                    // restart thread.
+                    checkStock();
+                    return;
+                }
             }
         }
         selectShipping();
     }
 
     private void selectShipping() throws Exception {
+        int failCount = 0;
         boolean shipMethodContinueClicked = false;
         while(!shipMethodContinueClicked) {
             try {
@@ -261,12 +290,19 @@ class Scraper implements Runnable {
                 Thread.sleep(250);
                 System.out.println("3 - trying again...");
                 e.printStackTrace();
+                failCount++;
+                if(failCount == 50) {
+                    // restart thread.
+                    checkStock();
+                    return;
+                }
             }
         }
         enterCreditCard();
     }
 
     private void enterCreditCard() throws Exception {
+        int failCount = 0;
         boolean ccInfoEntered = false;
         while(!ccInfoEntered) {
             try {
@@ -297,6 +333,12 @@ class Scraper implements Runnable {
                 Thread.sleep(250);
                 System.out.println("4 - trying again...");
                 e.printStackTrace();
+                failCount++;
+                if(failCount == 50) {
+                    // restart thread.
+                    checkStock();
+                    return;
+                }
             }
         }
         paymentSubmit();
