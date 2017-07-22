@@ -1,10 +1,17 @@
 import java.text.DecimalFormat;
+import java.util.ArrayList;
+import java.util.Collection;
+import java.util.Collections;
 import java.util.List;
+import java.util.Queue;
 import java.util.Scanner;
+import java.util.concurrent.ConcurrentLinkedDeque;
+import java.util.concurrent.ConcurrentLinkedQueue;
 
 public class Main {
     private static Scanner scan = new Scanner(System.in);
     private static DataManager uc;
+    public static List<Thread> buying = Collections.synchronizedList(new ArrayList<Thread>());
 
     public static void main(String[] args) {
         uc = SaveHelper.load();
@@ -711,19 +718,21 @@ public class Main {
 
     private static void runAllBots() {
         //List<User> ul = uc.getUserList();
-        Scraper scrappyDoo = new Scraper();
+       // Scraper scrappyDoo = new Scraper();
         //scrappyDoo.checkStock(ul.get(0), ul.get(0).getSites().get(0));
         for (User u: uc.getUserList()) {
             for (Site s: u.getSites()) {
                 try {
-                    Thread scraperThread = new Thread();
-                    scraperThread.start();
-                    scrappyDoo.checkStock(u, s);
+                    Scraper scraper = new Scraper(u, s, buying.size());
+                    Thread thread = new Thread(scraper);
+                    thread.setPriority(Thread.MIN_PRIORITY);
+                    thread.start();
+                    buying.add(thread);
+                    //scrappyDoo.checkStock(u, s);
                 } catch (Exception e) {
                     System.out.println("Failed to check user: " + u.getFullName() + " site: " + s.getUrl());
                     System.out.println("please make sure that all info is entered correctly for the user and site");
                 }
-                //TODO get this to make a new thread for each selenium instance
             }
         }
         printMainOptions();

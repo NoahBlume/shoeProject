@@ -6,6 +6,8 @@ import org.openqa.selenium.*;
 import org.openqa.selenium.support.ui.ExpectedConditions;
 import org.openqa.selenium.support.ui.WebDriverWait;
 
+import java.util.Random;
+
 
 class Scraper implements Runnable {
 
@@ -16,6 +18,8 @@ class Scraper implements Runnable {
     private WebDriver m_driver;
     private User u;
     private Site s;
+    private int index = 0;
+    private final int FAIL_LIMIT = 25;
     //private Keyboard keyboard;
     // Default to Footlocker.
     //private String m_site;
@@ -24,9 +28,10 @@ class Scraper implements Runnable {
     // Possibly taking a file of websites in as the references.
 
 
-    Scraper(User u, Site s) {
+    Scraper(User u, Site s, int index) {
         this.u = u;
         this.s = s;
+        this.index = index;
         System.setProperty("webdriver.gecko.driver","drivers/geckodriver/geckodriver.exe");
         m_driver = new FirefoxDriver();
     }
@@ -36,12 +41,12 @@ class Scraper implements Runnable {
     }
 
     void checkStock() {
-        int errors = 0;
+        int fails = 0;
         try {
             String url = s.getUrl();
             boolean inStock = false;
             while(!inStock) {
-                if (errors > 20) {
+                if (fails > FAIL_LIMIT) {
                     return;
                 }
                 try {
@@ -52,11 +57,12 @@ class Scraper implements Runnable {
                         inStock = true;
                         System.out.println("in stock");
                     } else {
+                        Thread.sleep(10000);
                         System.out.println("out of stock");
                     }
 
                 } catch(Exception e) {
-                    errors++;
+                    fails++;
                     System.out.println("failed to check stock.");
                     System.out.println(e.getMessage());
                     e.printStackTrace();
@@ -70,6 +76,7 @@ class Scraper implements Runnable {
 
     private void scrape() {
         try {
+            Main.buying.get(index).setPriority(Thread.MAX_PRIORITY);
             addToCart();
         } catch(Exception e) {
             System.out.println("shit fucked up.");
@@ -80,9 +87,14 @@ class Scraper implements Runnable {
     }
 
     private void addToCart() throws Exception {
+        int fails = 0;
         boolean addedToCart = false;
         boolean clickedCart = false;
         while (!addedToCart) {
+            if (fails > FAIL_LIMIT) {
+                checkStock();
+                return;
+            }
             try {
                 if (!m_driver.findElement(By.id("header_cart_count")).getText().equals("1")) {
                     m_driver.findElement(By.id("current_size_display")).click();
@@ -97,16 +109,15 @@ class Scraper implements Runnable {
                     String startingUrl = m_driver.getCurrentUrl();
                     String endingUrl = m_driver.getCurrentUrl();
                     while (startingUrl.equals(endingUrl)) {
-                        System.out.println("one");
                         if(m_driver.findElements(By.id("header_cart_button")).size() > 0) {
                             m_driver.findElement(By.id("header_cart_button")).click();
                         }
-                        System.out.println("uno");
                         endingUrl = m_driver.getCurrentUrl();
                     }
                     clickedCart = true;
                 }
             } catch (NoSuchElementException | TimeoutException | ElementNotInteractableException e){
+                fails++;
                 Thread.sleep(250);
                 System.out.println("0 - trying again...");
             }
@@ -115,10 +126,15 @@ class Scraper implements Runnable {
     }
 
     private void checkout() throws Exception {
+        int fails = 0;
         System.out.println("Made it to checkout");
         Thread.sleep(250);
         boolean quantityCheck = false;
         while(!quantityCheck) {
+            if (fails > FAIL_LIMIT) {
+                checkStock();
+                return;
+            }
             try {
                 //m_driver.findElement(By.xpath("//id[contains(text(), 'quantity_901136208')]")).click();
                 //m_driver.findElement(By.xpath("//id[contains(text(), 'quantity_901136208')]")).sendKeys("1");
@@ -134,6 +150,7 @@ class Scraper implements Runnable {
                 checkoutButton.click();
                 quantityCheck = true;
             } catch (NoSuchElementException | TimeoutException | ElementNotInteractableException e) {
+                fails++;
                 Thread.sleep(250);
                 System.out.println("0.5 - trying again...");
             }
@@ -142,9 +159,14 @@ class Scraper implements Runnable {
     }
 
     private void enterAddress() throws Exception {
+        int fails = 0;
         boolean statePicked = false;
         boolean infoEntered = false;
         while(!infoEntered) {
+            if (fails > FAIL_LIMIT) {
+                checkStock();
+                return;
+            }
             try {
                 m_driver.findElement(By.xpath("//label[contains(text(), 'First Name')]")).click();
                 if (!m_driver.findElement(By.id("billFirstName")).getAttribute("value")
@@ -154,6 +176,8 @@ class Scraper implements Runnable {
 
                 if (!m_driver.findElement(By.id("billEmailAddress")).getAttribute("value")
                         .toLowerCase().contains(u.getEmail().toLowerCase())) {
+                    ((JavascriptExecutor) m_driver).executeScript("window.focus();");
+                    m_driver.findElement(By.id("billEmailAddress")).clear();
                     m_driver.findElement(By.id("billEmailAddress")).sendKeys(u.getEmail());
                 }
 
@@ -197,6 +221,7 @@ class Scraper implements Runnable {
                     infoEntered = true;
                 }
             } catch (ElementNotInteractableException | NoSuchElementException e) {
+                fails++;
                 infoEntered = false;
                 Thread.sleep(250);
                 System.out.println("1 - trying again...");
@@ -206,9 +231,18 @@ class Scraper implements Runnable {
     }
 
     private void submitAddressInfo() throws Exception {
+        int fails = 0;
         boolean billPaneContinueClicked = false;
         boolean processed = false;
+        WebElement billEmailAddress = m_driver.findElement(By.id("billEmailAddress"));
         while(!billPaneContinueClicked || !processed) {
+            if (fails > FAIL_LIMIT) {
+                checkStock();
+                return;
+            }
+            if (fails > 0) {
+                Thread.sleep(250);
+            }
             try {
                 if (m_driver.findElement(By.id("billPaneContinue")).isDisplayed()) {
                     m_driver.findElement(By.id("billPaneContinue")).click();
@@ -221,19 +255,15 @@ class Scraper implements Runnable {
                     m_driver.findElement(By.id("address_verification_edit_address_button")).click();
                     enterAddress();
                     return;
-                } else if (m_driver.findElement(By.id("billEmailAddress")).isDisplayed()) {
-//                    m_driver.findElement(By.xpath("//label[contains(text(), 'Email')]")).click();
-                    for (int i = 0; i < 30; i++) {
-                        m_driver.findElement(By.id("billEmailAddress")).sendKeys(Keys.DELETE);
-                    }
+                } else if (billEmailAddress.isDisplayed()) {
+                    ((JavascriptExecutor) m_driver).executeScript("window.focus();");
+                    billEmailAddress.clear();
                     m_driver.findElement(By.id("billEmailAddress")).sendKeys(u.getEmail());
-//                    m_driver.findElement(By.id("billEmailAddress")).click();
-//                    m_driver.findElement(By.id("billEmailAddress")).sendKeys(" ");
-//                    m_driver.findElement(By.id("billPaneContinue")).click();
                 }
 
                 billPaneContinueClicked = true;
             } catch (ElementNotInteractableException | NoSuchElementException e) {
+                fails++;
                 billPaneContinueClicked = false;
                 Thread.sleep(250);
                 System.out.println("2 - trying again...");
@@ -243,8 +273,13 @@ class Scraper implements Runnable {
     }
 
     private void selectShipping() throws Exception {
+        int fails = 0;
         boolean shipMethodContinueClicked = false;
         while(!shipMethodContinueClicked) {
+            if (fails > FAIL_LIMIT) {
+                checkStock();
+                return;
+            }
             try {
                 if (m_driver.findElement(By.id("billEmailAddress")).isDisplayed()) {
                     m_driver.findElement(By.id("billEmailAddress")).click();
@@ -257,6 +292,7 @@ class Scraper implements Runnable {
                     shipMethodContinueClicked = true;
                 }
             } catch (ElementNotInteractableException | NoSuchElementException e) {
+                fails++;
                 shipMethodContinueClicked = false;
                 Thread.sleep(250);
                 System.out.println("3 - trying again...");
@@ -267,8 +303,13 @@ class Scraper implements Runnable {
     }
 
     private void enterCreditCard() throws Exception {
+        int fails = 0;
         boolean ccInfoEntered = false;
         while(!ccInfoEntered) {
+            if (fails > FAIL_LIMIT) {
+                checkStock();
+                return;
+            }
             try {
                 //m_driver.findElement(By.xpath("//span[contains(text(), '3. Promo Code (optional)')]")).click();
                 if (!m_driver.findElement(By.id("CardNumber")).getAttribute("value").contains(u.getCcNumber())) {
@@ -293,6 +334,7 @@ class Scraper implements Runnable {
                     ccInfoEntered = true;
                 }
             } catch (ElementNotInteractableException | NoSuchElementException e) {
+                fails++;
                 ccInfoEntered = false;
                 Thread.sleep(250);
                 System.out.println("4 - trying again...");
@@ -303,12 +345,18 @@ class Scraper implements Runnable {
     }
 
     private void paymentSubmit() throws Exception {
+        int fails = 0;
         boolean submitted = false;
         while(!submitted) {
+            if (fails > FAIL_LIMIT) {
+                checkStock();
+                return;
+            }
             try {
                 m_driver.findElement(By.id("payMethodPaneContinue")).click();
                 submitted = true;
             } catch (ElementNotInteractableException | NoSuchElementException e) {
+                fails++;
                 submitted = false;
                 Thread.sleep(250);
                 System.out.println("5 - trying again...");
@@ -318,12 +366,18 @@ class Scraper implements Runnable {
     }
 
     private void unsubscribe() throws Exception {
+        int fails = 0;
         boolean unsubClicked = false;
         while(!unsubClicked) {
+            if (fails > FAIL_LIMIT) {
+                checkStock();
+                return;
+            }
             try {
                 m_driver.findElement(By.xpath("//label[@for='orderReviewPaneBillSubscribeEmail']")).click();
                 unsubClicked = true;
             } catch (ElementNotInteractableException | NoSuchElementException e) {
+                fails++;
                 unsubClicked = false;
                 Thread.sleep(250);
                 System.out.println("5 - trying again...");
@@ -333,13 +387,20 @@ class Scraper implements Runnable {
     }
 
     private void purchase(User u, Site s) throws Exception {
+        int fails = 0;
         boolean bought = false;
         while(!bought) {
+            if (fails > FAIL_LIMIT) {
+                checkStock();
+                return;
+            }
             try {
                 m_driver.findElement(By.id("orderSubmit")).click();
                 Thread.sleep(5000);
                 bought = true;
+                Main.buying.get(index).setPriority(Thread.MIN_PRIORITY);
             } catch (ElementNotInteractableException | NoSuchElementException e) {
+                fails++;
                 bought = false;
                 Thread.sleep(250);
                 System.out.println("6 - trying again...");
