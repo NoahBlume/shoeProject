@@ -37,7 +37,7 @@ public class Main {
 
         String input = scan.next();
         if ("exit".equals(input)) {
-            return;
+            System.exit(0);
         }
         try {
             int choice = Integer.parseInt(input);
@@ -63,12 +63,14 @@ public class Main {
                 default:
                     pl("Please enter one of the numbers listed above");
                     printMainOptions();
+                    return;
             }
         } catch (NumberFormatException e) {
             pl("Please enter one of the numbers listed above");
             printMainOptions();
+            return;
         }
-
+        printMainOptions();
     }
 
     private static void addUser() {
@@ -76,14 +78,12 @@ public class Main {
         pl("Enter this User's first name");
         String firstName = scan.next();
         if (firstName.equals("exit")) {
-            printMainOptions();
             return;
         }
 
         pl("Enter this USer's last name");
         String lastName = scan.next();
         if (lastName.equals("exit")) {
-            printMainOptions();
             return;
         }
         User user = new User(firstName, lastName);
@@ -91,7 +91,6 @@ public class Main {
         pl("Enter this User's email");
         String email = scan.next();
         if (email.equals("exit")) {
-            printMainOptions();
             return;
         }
         user.setEmail(email);
@@ -112,7 +111,6 @@ public class Main {
 
         String input = scan.next();
         if ("exit".equals(input)) {
-            printMainOptions();
             return;
         }
         try {
@@ -149,7 +147,6 @@ public class Main {
 
         String input = scan.next();
         if ("exit".equals(input)) {
-            editUsers();
             return;
         }
         try {
@@ -197,7 +194,6 @@ public class Main {
         pl("Please enter the user's new first name (enter 'exit' to go back to the previous menu)");
         String firstName = scan.next();
         if (firstName.equals("exit")) {
-            editUser(u);
             return;
         } else {
             u.setFirstName(firstName);
@@ -205,9 +201,7 @@ public class Main {
         }
         pl("Please enter the user's new last name (enter 'exit' to go back to the previous menu)");
         String lastName = scan.next();
-        if (lastName.equals("exit")) {
-            editUser(u);
-        } else {
+        if (!lastName.equals("exit")) {
             u.setLastName(lastName);
             SaveHelper.save(uc);
         }
@@ -216,9 +210,7 @@ public class Main {
     private static void editEmail(User u) {
         pl("Please enter the user's new email (enter 'exit' to go back to the previous menu)");
         String email = scan.next();
-        if (email.equals("exit")) {
-            editUser(u);
-        } else {
+        if (!email.equals("exit")) {
             u.setEmail(email);
             SaveHelper.save(uc);
         }
@@ -227,9 +219,7 @@ public class Main {
     private static void editPhone(User u) {
         pl("Please enter the user's new phone number (10 digits with no dashes)");
         String phone = scan.next();
-        if (phone.equals("exit")) {
-            editUser(u);
-        } else {
+        if (!phone.equals("exit")) {
             u.setPhone(phone);
             SaveHelper.save(uc);
         }
@@ -240,7 +230,7 @@ public class Main {
         pl("Please enter the user's new credit card number.");
         String ccNumber = scan.next();
         if (ccNumber.equals("exit")) {
-            editUser(u);
+            return;
         } else {
             u.setCcNumber(ccNumber);
             SaveHelper.save(uc);
@@ -249,7 +239,7 @@ public class Main {
         pl("Please enter the user's new credit card expiration date.(eg 05/20)");
         String expDate = scan.next();
         if (expDate.equals("exit")) {
-            editUser(u);
+            return;
         } else {
             u.setCcExpirationDate(expDate);
             SaveHelper.save(uc);
@@ -271,7 +261,7 @@ public class Main {
         scan.nextLine();
         String street = scan.nextLine();
         if (street.equals("exit")) {
-            editUser(u);
+            return;
         } else {
             u.setStreetAddress(street);
             SaveHelper.save(uc);
@@ -280,7 +270,7 @@ public class Main {
         pl("Please enter the user's new zipcode");
         String zipCode = scan.next();
         if (zipCode.equals("exit")) {
-            editUser(u);
+            return;
         } else {
             u.setZipCode(zipCode);
             SaveHelper.save(uc);
@@ -290,7 +280,7 @@ public class Main {
         scan.nextLine();
         String city = scan.nextLine();
         if (city.equals("exit")) {
-            editUser(u);
+            return;
         } else {
             u.setCity(city);
             SaveHelper.save(uc);
@@ -299,7 +289,6 @@ public class Main {
         pl("Please enter the user's new state");
         String state = scan.nextLine();
         if (state.equals("exit")) {
-            editUser(u);
         } else {
             u.setState(state);
             SaveHelper.save(uc);
@@ -317,7 +306,6 @@ public class Main {
 
         String input = scan.next();
         if ("exit".equals(input)) {
-            editUser(u);
             return;
         }
         try {
@@ -343,7 +331,6 @@ public class Main {
         pl("Enter this Site's url");
         String url = scan.next();
         if (url.equals("exit")) {
-            editUser(u);
             return;
         }
         Site site = new Site(url);
@@ -351,7 +338,6 @@ public class Main {
         pl("Enter this Site's scan frequency - in seconds");
         String scanFrequency = scan.next();
         if (scanFrequency.equals("exit")) {
-            editUser(u);
             return;
         }
         site.setScanFrequency(scanFrequency);
@@ -365,7 +351,6 @@ public class Main {
 
         String input = scan.next();
         if ("exit".equals(input)) {
-            editUser(u);
             return;
         }
         try {
@@ -395,7 +380,6 @@ public class Main {
         pl("please enter the shoe size you want to buy");
         String size = scan.next();
         if ("exit".equals(size)) {
-            editUser(u);
             return;
         }
         try {
@@ -412,7 +396,6 @@ public class Main {
         pl("please enter the number of shoes you want to buy");
         String quantity = scan.next();
         if (quantity.equals("exit")) {
-            editUser(u);
             return;
         }
         site.setQuantity(quantity);
@@ -420,7 +403,6 @@ public class Main {
         pl("Enter the shoe's sku");
         String sku = scan.next();
         if (sku.equals("exit")) {
-            editUser(u);
             return;
         }
         site.setSku(sku);
@@ -428,7 +410,6 @@ public class Main {
         pl("please enter the username for the site");
         String username = scan.next();
         if ("exit".equals(username)) {
-            editUser(u);
             return;
         }
         site.setSiteUsername(username);
@@ -436,7 +417,6 @@ public class Main {
         pl("please enter the password for the site");
         String password = scan.next();
         if ("exit".equals(password)) {
-            editUser(u);
             return;
         }
         site.setSitePassword(password);
@@ -455,7 +435,6 @@ public class Main {
         }
         String input = scan.next();
         if ("exit".equals(input)) {
-            editUser(u);
             return;
         }
         try {
@@ -491,7 +470,6 @@ public class Main {
 
         String input = scan.next();
         if ("exit".equals(input)) {
-            editSites(u);
             return;
         }
         try {
@@ -545,7 +523,6 @@ public class Main {
 
         String input = scan.next();
         if ("exit".equals(input)) {
-            editSite(s, u);
             return;
         }
         try {
@@ -571,7 +548,6 @@ public class Main {
         pl("Please enter the site's new url (enter 'exit' to go back to the previous menu)");
         String url = scan.next();
         if (url.equals("exit")) {
-            editSite(s, u);
             return;
         } else {
             s.setUrl(url);
@@ -584,7 +560,6 @@ public class Main {
         pl("Please enter the site's new scan frequency - in seconds (enter 'exit' to go back to the previous menu)");
         String frequency = scan.next();
         if ("exit".equals(frequency)) {
-            editSite(s, u);
             return;
         } else {
             s.setScanFrequency(frequency);
@@ -597,7 +572,6 @@ public class Main {
         pl("Please enter the site's new login username (enter 'exit' to go back to the previous menu)");
         String username = scan.next();
         if ("exit".equals(username)) {
-            editSite(s, u);
             return;
         } else {
             s.setSiteUsername(username);
@@ -610,7 +584,6 @@ public class Main {
         pl("Please enter the site's new login password (enter 'exit' to go back to the previous menu)");
         String password = scan.next();
         if ("exit".equals(password)) {
-            editSite(s, u);
             return;
         } else {
             s.setSitePassword(password);
@@ -623,7 +596,6 @@ public class Main {
         pl("Please enter the site's new sku (enter 'exit' to go back to the previous menu)");
         String sku = scan.next();
         if ("exit".equals(sku)) {
-            editSite(s, u);
             return;
         } else {
             s.setSku(sku);
@@ -636,7 +608,6 @@ public class Main {
         pl("Please enter the quantity of shoes wanted (enter 'exit' to go back to the previous menu)");
         String quantity = scan.next();
         if ("exit".equals(quantity)) {
-            editSite(s, u);
             return;
         } else {
             s.setQuantity(quantity);
@@ -649,7 +620,6 @@ public class Main {
         pl("Please enter the size of shoe you want (enter 'exit' to go back to the previous menu)");
         String size = scan.next();
         if ("exit".equals(size)) {
-            editSite(s, u);
             return;
         }
         try {
@@ -675,7 +645,6 @@ public class Main {
         }
         String input = scan.next();
         if ("exit".equals(input)) {
-            printMainOptions();
             return;
         }
         try {
@@ -701,7 +670,6 @@ public class Main {
         pl("Enter the new proxy in the form 'ipAddress:port' - e.g. 216.3.128.12:8080 (enter 'exit' to go back to the main menu)");
         String proxy = scan.next();
         if (proxy.equals("exit")) {
-            printMainOptions();
             return;
         }
 
@@ -720,7 +688,6 @@ public class Main {
 
         String input = scan.next();
         if ("exit".equals(input)) {
-            printMainOptions();
             return;
         }
         try {
@@ -743,14 +710,21 @@ public class Main {
     }
 
     private static void runAllBots() {
-        List<User> ul = uc.getUserList();
+        //List<User> ul = uc.getUserList();
         Scraper scrappyDoo = new Scraper();
-        scrappyDoo.checkStock(ul.get(0), ul.get(0).getSites().get(0));
+        //scrappyDoo.checkStock(ul.get(0), ul.get(0).getSites().get(0));
         for (User u: uc.getUserList()) {
             for (Site s: u.getSites()) {
+                try {
+                    scrappyDoo.checkStock(u, s);
+                } catch (Exception e) {
+                    System.out.println("Failed to check user: " + u.getFullName() + " site: " + s.getUrl());
+                    System.out.println("please make sure that all info is entered correctly for the user and site");
+                }
                 //TODO get this to make a new thread for each selenium instance
             }
         }
+        printMainOptions();
     }
 
     private static void pl(String s) {

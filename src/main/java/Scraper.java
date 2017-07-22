@@ -22,47 +22,41 @@ class Scraper {
     // Possibly taking a file of websites in as the references.
 
     Scraper() {
-        //this("http://www.footlocker.com");
-        //m_site = "http://www.footlocker.com";
         System.setProperty("webdriver.gecko.driver","drivers/geckodriver/geckodriver.exe");
         m_driver = new FirefoxDriver();
-//        try {
-//            keyboard = new Keyboard();
-//        } catch (Exception e) {
-//            System.out.println("failed to instantiate keyboard");
-//            System.out.println(e.getMessage());
-//            e.printStackTrace();
-//        }
     }
 
-//    public Scraper(String site, WebDriver driver) {
-//        m_site = site;
-//        System.setProperty("webdriver.gecko.driver","drivers/geckodriver/geckodriver.exe");
-//        m_driver = new FirefoxDriver();
-//    }
-
     void checkStock(User u, Site s) {
-        String url = s.getUrl();
-        boolean inStock = false;
-        while(!inStock) {
-            try {
-                m_driver.get(url);
-                WebElement selectedSize = m_driver.findElement(By.xpath("//a[contains(text(), '" + s.getShoeSize() + "')]"));
-                String sizeClass = selectedSize.getAttribute("class");
-                if (sizeClass.contains("in-stock")) {
-                    inStock = true;
-                    System.out.println("in stock");
-                } else {
-                    System.out.println("out of stock");
+        int errors = 0;
+        try {
+            String url = s.getUrl();
+            boolean inStock = false;
+            while(!inStock) {
+                if (errors > 20) {
+                    return;
                 }
+                try {
+                    m_driver.get(url);
+                    WebElement selectedSize = m_driver.findElement(By.xpath("//a[contains(text(), '" + s.getShoeSize() + "')]"));
+                    String sizeClass = selectedSize.getAttribute("class");
+                    if (sizeClass.contains("in-stock")) {
+                        inStock = true;
+                        System.out.println("in stock");
+                    } else {
+                        System.out.println("out of stock");
+                    }
 
-            } catch(Exception e) {
-                System.out.println("failed to check stock.");
-                System.out.println(e.getMessage());
-                e.printStackTrace();
+                } catch(Exception e) {
+                    errors++;
+                    System.out.println("failed to check stock.");
+                    System.out.println(e.getMessage());
+                    e.printStackTrace();
+                }
             }
+            scrape(u, s);
+        } finally {
+            m_driver.close();
         }
-        scrape(u, s);
     }
 
     private void scrape(User u, Site s) {
@@ -83,7 +77,7 @@ class Scraper {
             try {
                 if (!m_driver.findElement(By.id("header_cart_count")).getText().equals("1")) {
                     m_driver.findElement(By.id("current_size_display")).click();
-                    By locator = By.cssSelector("a[value='08.5']");
+                    By locator = By.cssSelector("a[value='" + s.getShoeSize() + "']");
                     WebElement theButton = m_driver.findElement(locator);
                     theButton.sendKeys(Keys.ENTER);
                     m_driver.findElement(By.id("pdp_addtocart_button")).click();
@@ -300,7 +294,17 @@ class Scraper {
     }
 
     private void paymentSubmit(User u, Site s) throws Exception {
-        m_driver.findElement(By.id("payMethodPaneContinue")).click();
+        boolean submitted = false;
+        while(!submitted) {
+            try {
+                m_driver.findElement(By.id("payMethodPaneContinue")).click();
+                submitted = true;
+            } catch (ElementNotInteractableException | NoSuchElementException e) {
+                submitted = false;
+                Thread.sleep(250);
+                System.out.println("5 - trying again...");
+            }
+        }
         unsubscribe(u, s);
     }
 
@@ -319,9 +323,18 @@ class Scraper {
         purchase(u, s);
     }
 
-    private void purchase(User u, Site s) {
-        if(u != null & s!= null) {
-            System.out.println("delete me when you actually put something here");
+    private void purchase(User u, Site s) throws Exception {
+        boolean bought = false;
+        while(!bought) {
+            try {
+                m_driver.findElement(By.id("orderSubmit")).click();
+                Thread.sleep(5000);
+                bought = true;
+            } catch (ElementNotInteractableException | NoSuchElementException e) {
+                bought = false;
+                Thread.sleep(250);
+                System.out.println("6 - trying again...");
+            }
         }
     }
 
