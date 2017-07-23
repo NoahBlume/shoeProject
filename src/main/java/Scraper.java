@@ -3,10 +3,17 @@
 import org.openqa.selenium.WebDriver;
 import org.openqa.selenium.firefox.FirefoxDriver;
 import org.openqa.selenium.*;
+import org.openqa.selenium.firefox.FirefoxOptions;
+import org.openqa.selenium.firefox.GeckoDriverService;
+import org.openqa.selenium.phantomjs.PhantomJSDriver;
+import org.openqa.selenium.phantomjs.PhantomJSDriverService;
+import org.openqa.selenium.remote.DesiredCapabilities;
 import org.openqa.selenium.support.ui.ExpectedConditions;
 import org.openqa.selenium.support.ui.WebDriverWait;
 
 import java.util.Random;
+
+import static org.openqa.selenium.remote.CapabilityType.PROXY;
 
 
 class Scraper implements Runnable {
@@ -28,12 +35,28 @@ class Scraper implements Runnable {
     // Possibly taking a file of websites in as the references.
 
 
-    Scraper(User u, Site s, int index) {
+    Scraper(User u, Site s, int index, String proxyString) {
         this.u = u;
         this.s = s;
         this.index = index;
+
         System.setProperty("webdriver.gecko.driver","drivers/geckodriver/geckodriver.exe");
-        m_driver = new FirefoxDriver();
+        try {
+            DesiredCapabilities capabilities = new DesiredCapabilities();
+            Proxy proxy = new Proxy();
+            proxy.setHttpProxy(proxyString);
+            capabilities.setCapability(PROXY, proxy);
+
+            m_driver = new FirefoxDriver(capabilities);
+        } catch (Exception e) {
+            m_driver = new FirefoxDriver();
+        }
+
+//        m_driver = new FirefoxDriver();
+//        DesiredCapabilities caps = new DesiredCapabilities();
+//        caps.setCapability(PhantomJSDriverService.PHANTOMJS_EXECUTABLE_PATH_PROPERTY,
+//                "drivers/phantomjs-2.1.1-windows/bin/phantomjs.exe");
+//        m_driver = new  PhantomJSDriver(caps);
     }
 
     public void run() {

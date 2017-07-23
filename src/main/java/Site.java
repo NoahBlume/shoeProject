@@ -7,11 +7,8 @@ public class Site implements Serializable{
     private SiteEnum siteEnum;
     private String url;
     private String shoeSize;
-    private String sku;
     private int quantity = 1;
-    private int scanFrequency = 10; //seconds
-    private String sitePassword;
-    private String siteUsername; //or email
+    private int scanFrequency = 6; //stock checks per minute - default 6
 
 
 
@@ -35,20 +32,8 @@ public class Site implements Serializable{
         return shoeSize;
     }
 
-    public String getSku() {
-        return sku;
-    }
-
     public int getQuantity() {
         return quantity;
-    }
-
-    public String getSitePassword() {
-        return sitePassword;
-    }
-
-    public String getSiteUsername() {
-        return siteUsername;
     }
 
     public void setSiteEnum(SiteEnum siteEnum) {
@@ -72,10 +57,6 @@ public class Site implements Serializable{
         this.shoeSize = shoeSize;
     }
 
-    public void setSku(String sku) {
-        this.sku = sku;
-    }
-
     public void setQuantity(String quantity) {
         try {
             this.quantity = Integer.parseInt(quantity);
@@ -85,16 +66,6 @@ public class Site implements Serializable{
         }
     }
 
-    public void setSitePassword(String sitePassword) {
-        this.sitePassword = sitePassword;
-    }
-
-    public void setSiteUsername(String siteUsername) {
-        this.siteUsername = siteUsername;
-    }
-
     @Override
-    public String toString() {
-        return url;
-    }
+    public String toString() { return url; }
 }
