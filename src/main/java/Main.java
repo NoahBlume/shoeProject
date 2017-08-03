@@ -713,8 +713,8 @@ public class Main {
                     if (proxyList.size() != 0) {
                         proxy = proxyList.get(scraperIndex % proxyList.size());
                     }
-                    Scraper scraper = new Scraper(u, s, scraperIndex, proxy);
-                    Thread thread = new Thread(scraper);
+                    Scraper2 scraper2 = new Scraper2(u, s, scraperIndex, proxy);
+                    Thread thread = new Thread(scraper2);
                     thread.setPriority(Thread.MIN_PRIORITY);
                     thread.start();
                     buying.add(thread);

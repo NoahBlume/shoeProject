@@ -16,6 +16,9 @@ import org.openqa.selenium.support.ui.WebDriverWait;
 import static org.openqa.selenium.remote.CapabilityType.PROXY;
 
 //the scraper for size.co.uk
+//import org.apache.commons.lang3.StringUtils
+//LevenshteinDistance - the number of changes needed to change one String into another
+//use to find closest match???
 class Scraper2 implements Runnable {
 
 
@@ -88,7 +91,7 @@ class Scraper2 implements Runnable {
                     return;
                 }
                 try {
-                    m_driver.get(url);
+                    m_driver.get("https://www.size.co.uk/mens/footwear/latest/");
                     WebElement selectedSize = m_driver.findElement(By.xpath("//a[contains(text(), '" + s.getShoeSize() + "')]"));
                     String sizeClass = selectedSize.getAttribute("class");
                     if (sizeClass.contains("in-stock")) {
