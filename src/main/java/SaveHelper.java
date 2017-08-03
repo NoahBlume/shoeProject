@@ -45,33 +45,7 @@ public class SaveHelper {
             return dm;
 
         } catch (IOException e) {
-            e.printStackTrace();
             System.out.println("Failed to load JSON.");
-        }
-
-        try {
-            // Read from disk using FileInputStream
-            FileInputStream f_in = new FileInputStream("myUserContainer.data");
-
-            // Read object using ObjectInputStream
-            ObjectInputStream obj_in = new ObjectInputStream (f_in);
-
-            // Read an object
-            Object obj = obj_in.readObject();
-
-            if (obj instanceof DataManager)
-            {
-                // Cast object to a DataManager
-                DataManager loadedUC = (DataManager) obj;
-
-                System.out.println("Successfully loaded.");
-                DataManager.setInstance(loadedUC);
-                return loadedUC;
-            } else {
-                System.out.println("Falied to load.");
-            }
-        } catch(java.io.IOException | ClassNotFoundException e) {
-            System.out.println("Falied to load.");
         }
         return null;
     }

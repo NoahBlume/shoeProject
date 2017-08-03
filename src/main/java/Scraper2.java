@@ -15,8 +15,8 @@ import org.openqa.selenium.support.ui.WebDriverWait;
 
 import static org.openqa.selenium.remote.CapabilityType.PROXY;
 
-
-class Scraper implements Runnable {
+//the scraper for size.co.uk
+class Scraper2 implements Runnable {
 
 
     // Class Variables
@@ -35,37 +35,37 @@ class Scraper implements Runnable {
     // Possibly taking a file of websites in as the references.
 
 
-    Scraper(User u, Site s, int index, String proxyString) {
+    Scraper2(User u, Site s, int index, String proxyString) {
         this.u = u;
         this.s = s;
         this.index = index;
 
         System.setProperty("webdriver.gecko.driver","drivers/geckodriver/geckodriver.exe");
-         try {
-             String[] proxySplit = proxyString.split(":");
-             String host = proxySplit[0];
-             String port = proxySplit[1];
+        try {
+            String[] proxySplit = proxyString.split(":");
+            String host = proxySplit[0];
+            String port = proxySplit[1];
 
-             JsonObject json = new JsonObject();
-             json.addProperty("proxyType", "MANUAL");
-             json.addProperty("httpProxy", host);
-             json.addProperty("httpProxyPort", port);
-             json.addProperty("sslProxy", host);
-             json.addProperty("sslProxyPort", port);
-             DesiredCapabilities capabilities = new DesiredCapabilities();
-             capabilities.setCapability(CapabilityType.PROXY, json);
+            JsonObject json = new JsonObject();
+            json.addProperty("proxyType", "MANUAL");
+            json.addProperty("httpProxy", host);
+            json.addProperty("httpProxyPort", port);
+            json.addProperty("sslProxy", host);
+            json.addProperty("sslProxyPort", port);
+            DesiredCapabilities capabilities = new DesiredCapabilities();
+            capabilities.setCapability(CapabilityType.PROXY, json);
 
 //            DesiredCapabilities capabilities = new DesiredCapabilities();
 //            Proxy proxy = new Proxy();
 //            proxy.setHttpProxy(proxyString);
 //            capabilities.setCapability(PROXY, proxy);
 
-             m_driver = new FirefoxDriver(capabilities);
-         } catch (Exception e) {
-             e.printStackTrace();
-             System.out.println("proxy use failed");
-             m_driver = new FirefoxDriver();
-         }
+            m_driver = new FirefoxDriver(capabilities);
+        } catch (Exception e) {
+            e.printStackTrace();
+            System.out.println("proxy use failed");
+            m_driver = new FirefoxDriver();
+        }
 
 //        m_driver = new FirefoxDriver();
 //        DesiredCapabilities caps = new DesiredCapabilities();
@@ -448,17 +448,17 @@ class Scraper implements Runnable {
 
 
     // Refresh Example
-       // m_driver.navigate().refresh();
+    // m_driver.navigate().refresh();
 
-        // Thread safe exit page not windows
-        // End scrape
-        //m_driver.close();
+    // Thread safe exit page not windows
+    // End scrape
+    //m_driver.close();
 
-        // None thread safe
-        // m_driver.quit();
+    // None thread safe
+    // m_driver.quit();
 
 
-        //how to wait for element to be on page before doing something
+    //how to wait for element to be on page before doing something
 //        WebDriver driver = new FirefoxDriver();
 //        driver.get("http://somedomain/url_that_delays_loading");
 //        WebElement myDynamicElement = (new WebDriverWait(driver, 10))

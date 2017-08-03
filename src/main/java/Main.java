@@ -708,8 +708,12 @@ public class Main {
         for (User u: dm.getUserList()) {
             for (Site s: u.getSites()) {
                 try {
-                    int index = buying.size();
-                    Scraper scraper = new Scraper(u, s, index, proxyList.get(index % proxyList.size()));
+                    int scraperIndex = buying.size();
+                    String proxy = "127.0.0.1:8080";
+                    if (proxyList.size() != 0) {
+                        proxy = proxyList.get(scraperIndex % proxyList.size());
+                    }
+                    Scraper scraper = new Scraper(u, s, scraperIndex, proxy);
                     Thread thread = new Thread(scraper);
                     thread.setPriority(Thread.MIN_PRIORITY);
                     thread.start();
