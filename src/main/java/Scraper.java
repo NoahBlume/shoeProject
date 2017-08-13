@@ -5,6 +5,7 @@ import org.openqa.selenium.WebDriver;
 import org.openqa.selenium.firefox.FirefoxDriver;
 import org.openqa.selenium.*;
 import org.openqa.selenium.firefox.FirefoxOptions;
+import org.openqa.selenium.firefox.FirefoxProfile;
 import org.openqa.selenium.firefox.GeckoDriverService;
 import org.openqa.selenium.phantomjs.PhantomJSDriver;
 import org.openqa.selenium.phantomjs.PhantomJSDriverService;
@@ -13,11 +14,23 @@ import org.openqa.selenium.remote.DesiredCapabilities;
 import org.openqa.selenium.support.ui.ExpectedConditions;
 import org.openqa.selenium.support.ui.WebDriverWait;
 
+import java.io.IOException;
+import java.nio.file.Files;
+import java.nio.file.Paths;
+import java.nio.file.StandardOpenOption;
+import java.util.List;
+
+import static org.openqa.selenium.remote.CapabilityType.BROWSER_NAME;
 import static org.openqa.selenium.remote.CapabilityType.PROXY;
 
 
 class Scraper implements Runnable {
-
+    //footsites: footlocker, eastbay, champs, footaction
+    //test links:
+        //champs - http://www.champssports.com/product/model:173251/sku:08497006/jordan-retro-4-mens/black/blue/
+        //eastbay - http://www.eastbay.com/product/model:98963/sku:24300657/nike-air-force-1-low-mens/all-white/white/
+        //footaction - http://www.footaction.com/product/model:274977/sku:78627100/nike-pg-1-mens/paul-george/
+        //footlocker - https://www.footlocker.com/product/model:175563/sku:11881026/nike-roshe-one-mens/all-black/black/
 
     // Class Variables
 
@@ -41,31 +54,33 @@ class Scraper implements Runnable {
         this.index = index;
 
         System.setProperty("webdriver.gecko.driver","drivers/geckodriver/geckodriver.exe");
-         try {
-             String[] proxySplit = proxyString.split(":");
-             String host = proxySplit[0];
-             String port = proxySplit[1];
+        FirefoxProfile firefoxProfile = new FirefoxProfile();
+        firefoxProfile.setPreference("browser.privatebrowsing.autostart", true);
+ //        try {
+//             String[] proxySplit = proxyString.split(":");
+//             String host = proxySplit[0];
+//             String port = proxySplit[1];
 
-             JsonObject json = new JsonObject();
-             json.addProperty("proxyType", "MANUAL");
-             json.addProperty("httpProxy", host);
-             json.addProperty("httpProxyPort", port);
-             json.addProperty("sslProxy", host);
-             json.addProperty("sslProxyPort", port);
-             DesiredCapabilities capabilities = new DesiredCapabilities();
-             capabilities.setCapability(CapabilityType.PROXY, json);
+//             JsonObject json = new JsonObject();
+//             json.addProperty("proxyType", "MANUAL");
+//             json.addProperty("httpProxy", host);
+//             json.addProperty("httpProxyPort", port);
+//             json.addProperty("sslProxy", host);
+//             json.addProperty("sslProxyPort", port);
+//             DesiredCapabilities capabilities = new DesiredCapabilities();
+//             capabilities.setCapability(CapabilityType.PROXY, json);
 
 //            DesiredCapabilities capabilities = new DesiredCapabilities();
 //            Proxy proxy = new Proxy();
 //            proxy.setHttpProxy(proxyString);
 //            capabilities.setCapability(PROXY, proxy);
 
-             m_driver = new FirefoxDriver(capabilities);
-         } catch (Exception e) {
-             e.printStackTrace();
-             System.out.println("proxy use failed");
-             m_driver = new FirefoxDriver();
-         }
+ //            m_driver = new FirefoxDriver(capabilities);
+//         } catch (Exception e) {
+   //          e.printStackTrace();
+   //          System.out.println("proxy use failed");
+             m_driver = new FirefoxDriver(firefoxProfile);
+  //       }
 
 //        m_driver = new FirefoxDriver();
 //        DesiredCapabilities caps = new DesiredCapabilities();
@@ -75,44 +90,92 @@ class Scraper implements Runnable {
     }
 
     public void run() {
-        checkStock();
+        m_driver.get(s.getUrl());
+        m_driver.findElement(By.xpath("//span[contains(@class, 'login-text')]")).click();
+        login();
     }
 
-    void checkStock() {
+    void login() {
         int fails = 0;
         try {
-            String url = s.getUrl();
+            //String url = s.getUrl();
+            boolean loggedIn = false;
+            while(!loggedIn) {
+                if (fails > FAIL_LIMIT) {
+                    return;
+                }
+                try {
+                    //m_driver.findElement(By.xpath("//span[contains(@class, 'login-text')]")).sendKeys(Keys.CONTROL, Keys.SHIFT, "P" );
+                    Thread.sleep(1000);
+                    m_driver.findElement(By.xpath("//input[@data-componentname='emailAddress']")).clear();
+                    m_driver.findElement(By.xpath("//input[@data-componentname='emailAddress']")).sendKeys(u.getEmail());
+                    m_driver.findElement(By.xpath("//input[@data-componentname='password']")).clear();
+                    m_driver.findElement(By.xpath("//input[@data-componentname='password']")).sendKeys(u.getPassword());
+                    m_driver.findElement(By.xpath("//input[@type='button'][@value='LOG IN']")).click();
+                    loggedIn = true;
+                } catch(Exception e) {
+                    fails++;
+                    System.out.println("failed to login.");
+                    System.out.println(e.getMessage());
+                    e.printStackTrace();
+                }
+            }
+            checkStock();
+        } finally {
+            m_driver.close();
+        }
+    }
+
+    private void checkStock() {
+        int fails = 0;
+        try {
+            //String url = s.getUrl();
             boolean inStock = false;
             while(!inStock) {
                 if (fails > FAIL_LIMIT) {
                     return;
                 }
                 try {
-                    m_driver.get(url);
-                    WebElement selectedSize = m_driver.findElement(By.xpath("//a[contains(text(), '" + s.getShoeSize() + "')]"));
-                    String sizeClass = selectedSize.getAttribute("class");
-                    if (sizeClass.contains("in-stock")) {
-                        inStock = true;
-                        System.out.println("in stock");
-                    } else {
-                        Thread.sleep(10000);
-                        System.out.println("out of stock");
+                    //m_driver.findElement(By.xpath("//span[contains(@class, 'login-text')]")).sendKeys(Keys.CONTROL, Keys.SHIFT, "P" );
+                    Thread.sleep(1000);
+                    String size = s.getShoeSize();
+                    if (size.charAt(0) == '0') {
+                        size = size.substring(1);
                     }
-
+                    if (size.charAt(size.length() - 1) == '0') {
+                        size = size.substring(0, size.length() - 1);
+                    }
+                    if (size.charAt(size.length() - 1) == '.') {
+                        size = size.substring(0, size.length() - 1);
+                    }
+                    m_driver.findElement(By.className("js-selectBox-label")).click();
+                    WebElement sizeContainer = m_driver.findElement(By.className("exp-pdp-size-container"));
+                    List<WebElement> sizes = sizeContainer.findElements(By.xpath("//li[contains(text(), '" + size + "')]"));
+                    for (WebElement foundSize : sizes) {
+                        String text = foundSize.getText();
+                        if (foundSize.isEnabled() && foundSize.getText().trim().equals(size.trim())) {
+                            foundSize.click();
+                            inStock = true;
+                            break;
+                        }
+                    }
+                    if (!inStock) {
+                        m_driver.get(s.getUrl());
+                    }
                 } catch(Exception e) {
                     fails++;
-                    System.out.println("failed to check stock.");
+                    System.out.println("failed to login.");
                     System.out.println(e.getMessage());
                     e.printStackTrace();
                 }
             }
-            scrape();
+            startPurchase();
         } finally {
             m_driver.close();
         }
     }
 
-    private void scrape() {
+    private void startPurchase() {
         try {
             Main.buying.get(index).setPriority(Thread.MAX_PRIORITY);
             addToCart();
@@ -130,25 +193,23 @@ class Scraper implements Runnable {
         boolean clickedCart = false;
         while (!addedToCart) {
             if (fails > FAIL_LIMIT) {
-                checkStock();
+                login();
                 return;
             }
             try {
-                if (!m_driver.findElement(By.id("header_cart_count")).getText().equals("1")) {
-                    m_driver.findElement(By.id("current_size_display")).click();
-                    By locator = By.cssSelector("a[value='" + s.getShoeSize() + "']");
-                    WebElement theButton = m_driver.findElement(locator);
-                    theButton.sendKeys(Keys.ENTER);
-                    m_driver.findElement(By.id("pdp_addtocart_button")).click();
-                    addedToCart = true;
-                }
+                m_driver.findElement(By.id("buyingtools-add-to-cart-button")).click();
+                addedToCart = true;
                 if (!clickedCart) {
-                    System.out.println("true");
                     String startingUrl = m_driver.getCurrentUrl();
                     String endingUrl = m_driver.getCurrentUrl();
                     while (startingUrl.equals(endingUrl)) {
-                        if(m_driver.findElements(By.id("header_cart_button")).size() > 0) {
-                            m_driver.findElement(By.id("header_cart_button")).click();
+                        try {
+                            m_driver.findElement(By.className("notification-button")).click();
+                        } catch (NoSuchElementException e) {
+                            //sometimes the popup wont be there
+                        }
+                        if(m_driver.findElements(By.xpath("//span[@class='nsg-glyph--cart']")).size() > 0) {
+                            m_driver.findElement(By.xpath("//span[@class='nsg-glyph--cart']")).click();
                         }
                         endingUrl = m_driver.getCurrentUrl();
                     }
@@ -159,6 +220,34 @@ class Scraper implements Runnable {
                 Thread.sleep(250);
                 System.out.println("0 - trying again...");
             }
+            goToCheckout();
+        }
+    }
+
+    private void goToCheckout() throws Exception {
+        int fails = 0;
+        boolean checkingOut = false;
+        while (!checkingOut) {
+            if (fails > FAIL_LIMIT) {
+                login();
+                return;
+            }
+            try {
+                String startingUrl = m_driver.getCurrentUrl();
+                String endingUrl = m_driver.getCurrentUrl();
+                while (startingUrl.equals(endingUrl) || endingUrl.contains("checkout/html/cart")) {
+                    if(m_driver.findElements(By.id("ch4_cartCheckoutBtn")).size() > 0) {
+                        m_driver.findElement(By.id("ch4_cartCheckoutBtn")).click();
+                        endingUrl = m_driver.getCurrentUrl();
+                    }
+                }
+                checkingOut = true;
+            } catch (NoSuchElementException | TimeoutException | ElementNotInteractableException e){
+                fails++;
+                Thread.sleep(250);
+                e.printStackTrace();
+                System.out.println("0.25 - trying again...");
+            }
             checkout();
         }
     }
@@ -167,283 +256,107 @@ class Scraper implements Runnable {
         int fails = 0;
         System.out.println("Made it to checkout");
         Thread.sleep(250);
-        boolean quantityCheck = false;
-        while(!quantityCheck) {
+        boolean confirmedAddress = true;
+        while(!confirmedAddress) {
             if (fails > FAIL_LIMIT) {
-                checkStock();
+                enterCVC();
                 return;
             }
             try {
-                //m_driver.findElement(By.xpath("//id[contains(text(), 'quantity_901136208')]")).click();
-                //m_driver.findElement(By.xpath("//id[contains(text(), 'quantity_901136208')]")).sendKeys("1");
-                if (!m_driver.findElement(By.className("quantity")).getAttribute("value").equals(toString().valueOf(s.getQuantity()))) {
-                    m_driver.findElement(By.name("quantity")).clear();
-                    m_driver.findElement(By.name("quantity")).sendKeys(toString().valueOf(s.getQuantity()));
-                    m_driver.findElement(By.xpath("//name[contains(text(), 'quantity')]")).click();
-                    m_driver.findElement(By.xpath("//a[contains(text(), 'Update')]")).click();
-                }
-
-                WebElement checkoutButton = (new WebDriverWait(m_driver, 1))
-                        .until(ExpectedConditions.presenceOfElementLocated(By.id("cart_checkout_button")));
-                checkoutButton.click();
-                quantityCheck = true;
+                m_driver.findElement(By.className("ui-dialog-titlebar-close")).click();
+                m_driver.findElement(By.className("ch4_btnUseThisAddress")).click();
+                m_driver.findElement(By.id("shippingSubmit")).click();
+                confirmedAddress = true;
             } catch (NoSuchElementException | TimeoutException | ElementNotInteractableException e) {
                 fails++;
                 Thread.sleep(250);
                 System.out.println("0.5 - trying again...");
             }
         }
-        enterAddress();
+        enterCVC();
     }
 
-    private void enterAddress() throws Exception {
+    private void enterCVC() throws Exception {
         int fails = 0;
-        boolean statePicked = false;
-        boolean infoEntered = false;
-        while(!infoEntered) {
+        boolean cvcEntered = false;
+        m_driver.switchTo().frame("billingFormFrame");
+        while(!cvcEntered) {
             if (fails > FAIL_LIMIT) {
-                checkStock();
+                login();
                 return;
             }
             try {
-                m_driver.findElement(By.xpath("//label[contains(text(), 'First Name')]")).click();
-                if (!m_driver.findElement(By.id("billFirstName")).getAttribute("value")
-                        .toLowerCase().contains(u.getFirstName().toLowerCase())) {
-                    m_driver.findElement(By.id("billFirstName")).sendKeys(u.getFirstName());
-                }
-
-                if (!m_driver.findElement(By.id("billEmailAddress")).getAttribute("value")
-                        .toLowerCase().contains(u.getEmail().toLowerCase())) {
-                    ((JavascriptExecutor) m_driver).executeScript("window.focus();");
-                    m_driver.findElement(By.id("billEmailAddress")).clear();
-                    m_driver.findElement(By.id("billEmailAddress")).sendKeys(u.getEmail());
-                }
-
-                if (!m_driver.findElement(By.id("billLastName")).getAttribute("value")
-                        .toLowerCase().contains(u.getLastName().toLowerCase())) {
-                    m_driver.findElement(By.id("billLastName")).sendKeys(u.getLastName());
-                }
-
-                if (!m_driver.findElement(By.id("billAddress1")).getAttribute("value")
-                        .toLowerCase().contains(u.getStreetAddress().toLowerCase())) {
-                    m_driver.findElement(By.id("billAddress1")).sendKeys(u.getStreetAddress());
-                }
-
-                if (!m_driver.findElement(By.id("billPostalCode")).getAttribute("value")
-                        .toLowerCase().contains(u.getZipCode().toLowerCase())) {
-                    m_driver.findElement(By.id("billPostalCode")).sendKeys(u.getZipCode());
-                }
-
-                if (!m_driver.findElement(By.id("billCity")).getAttribute("value")
-                        .toLowerCase().contains(u.getCity().toLowerCase())) {
-                    m_driver.findElement(By.id("billCity")).sendKeys(u.getCity());
-                }
-
                 try {
-                    if (!statePicked) {
-                        m_driver.findElement(By.xpath("//select[@id='billState']/option[contains(text(), '" + u.getState() + "')]")).click();
-                        statePicked = true;
+                    m_driver.findElement(By.className("js-cvv")).clear();
+                    m_driver.findElement(By.className("js-cvv")).sendKeys(u.getCvc());
+                    m_driver.switchTo().defaultContent();
+                    m_driver.findElement(By.id("ch4_editShipping")).sendKeys("USA");
+                    WebElement scroll = m_driver.findElement(By.id("ch4_checkoutHeadingOpen"));
+                    scroll.sendKeys(Keys.PAGE_DOWN);
+                    m_driver.switchTo().frame("billingFormFrame");
+                    m_driver.findElement(By.className("js-confirmCVV")).click();
+//                    JavascriptExecutor jse = (JavascriptExecutor) m_driver;
+//                    jse.executeScript("window.scrollBy(0,250)", "");
+//                    if(m_driver.findElements(By.className("js-useCard")).size() > 0
+//                            && m_driver.findElement(By.className("js-useCard")).isEnabled()) {
+//                        m_driver.findElement(By.className("js-useCard")).click();
+//                    }
+                } catch (Exception e) {
+                    //buttons may not be present, continue to next step
+                }
+                try {
+                    m_driver.findElement(By.id("billingSubmit")).click();
+                    if (m_driver.findElements(By.id("billingSubmit")).size() == 0) {
+                        cvcEntered = true;
                     }
                 } catch (Exception e) {
-                    System.out.println("User's state is spelled incorrectly");
-                    return;
-                }
-
-                if (!m_driver.findElement(By.id("billHomePhone")).getAttribute("value")
-                        .toLowerCase().contains(u.getPhone().toLowerCase())) {
-                    m_driver.findElement(By.id("billHomePhone")).sendKeys(u.getPhone());
-                }
-
-                if (m_driver.findElement(By.id("billFirstName")).getAttribute("value")
-                        .toLowerCase().contains(u.getFirstName().toLowerCase())) {
-                    infoEntered = true;
+                    //button may not be present, wait for previous step
                 }
             } catch (ElementNotInteractableException | NoSuchElementException e) {
                 fails++;
-                infoEntered = false;
+                cvcEntered = false;
                 Thread.sleep(250);
                 System.out.println("1 - trying again...");
             }
         }
-        submitAddressInfo();
+        placeOrder();
     }
 
-    private void submitAddressInfo() throws Exception {
+    private void placeOrder() throws Exception {
         int fails = 0;
-        boolean billPaneContinueClicked = false;
-        boolean processed = false;
-        WebElement billEmailAddress = m_driver.findElement(By.id("billEmailAddress"));
-        while(!billPaneContinueClicked || !processed) {
+        boolean orderPlaced = false;
+        m_driver.switchTo().defaultContent();
+        while(!orderPlaced) {
             if (fails > FAIL_LIMIT) {
-                checkStock();
+                login();
                 return;
             }
             if (fails > 0) {
                 Thread.sleep(250);
             }
             try {
-                if (m_driver.findElement(By.id("billPaneContinue")).isDisplayed()) {
-                    m_driver.findElement(By.id("billPaneContinue")).click();
-                }
-
-                if (m_driver.findElement(By.id("shipMethodPaneContinue")).isDisplayed()) {
-                    processed = true;
-                } else if (m_driver.findElements(By.id("address_verification_edit_address_button")).size() > 0
-                        && m_driver.findElement(By.id("address_verification_edit_address_button")).isDisplayed()) {
-                    m_driver.findElement(By.id("address_verification_edit_address_button")).click();
-                    enterAddress();
-                    return;
-                } else if (billEmailAddress.isDisplayed()) {
-                    ((JavascriptExecutor) m_driver).executeScript("window.focus();");
-                    billEmailAddress.clear();
-                    m_driver.findElement(By.id("billEmailAddress")).sendKeys(u.getEmail());
-                }
-
-                billPaneContinueClicked = true;
+                m_driver.findElement(By.className("ch4_btnPlaceOrder")).click();
+                orderPlaced = true;
+                Thread.sleep(10 * 1000);
             } catch (ElementNotInteractableException | NoSuchElementException e) {
                 fails++;
-                billPaneContinueClicked = false;
+                orderPlaced = false;
                 Thread.sleep(250);
                 System.out.println("2 - trying again...");
             }
         }
-        selectShipping();
+        logPurchase();
     }
 
-    private void selectShipping() throws Exception {
-        int fails = 0;
-        boolean shipMethodContinueClicked = false;
-        while(!shipMethodContinueClicked) {
-            if (fails > FAIL_LIMIT) {
-                checkStock();
-                return;
-            }
-            try {
-                if (m_driver.findElement(By.id("billEmailAddress")).isDisplayed()) {
-                    m_driver.findElement(By.id("billEmailAddress")).click();
-                    m_driver.findElement(By.id("billEmailAddress")).sendKeys(" ");
-                    m_driver.findElement(By.id("billPaneContinue")).click();
-                }
 
-                if (m_driver.findElement(By.id("shipMethodPaneContinue")).isDisplayed()) {
-                    m_driver.findElement(By.id("shipMethodPaneContinue")).click();
-                    shipMethodContinueClicked = true;
-                }
-            } catch (ElementNotInteractableException | NoSuchElementException e) {
-                fails++;
-                shipMethodContinueClicked = false;
-                Thread.sleep(250);
-                System.out.println("3 - trying again...");
-                e.printStackTrace();
-            }
+    private void logPurchase() throws Exception {
+        try {
+            Files.write(Paths.get("attemptedBuys.txt"), (u.getEmail() + " " + s.getUrl() + "\n").getBytes(), StandardOpenOption.APPEND);
+            Thread.sleep(10 * 1000);
+        }catch (IOException e) {
+            //exception handling left as an exercise for the reader
         }
-        enterCreditCard();
-    }
-
-    private void enterCreditCard() throws Exception {
-        int fails = 0;
-        boolean ccInfoEntered = false;
-        while(!ccInfoEntered) {
-            if (fails > FAIL_LIMIT) {
-                checkStock();
-                return;
-            }
-            try {
-                //m_driver.findElement(By.xpath("//span[contains(text(), '3. Promo Code (optional)')]")).click();
-                if (!m_driver.findElement(By.id("CardNumber")).getAttribute("value").contains(u.getCcNumber())) {
-                    m_driver.findElement(By.id("CardNumber")).sendKeys(u.getCcNumber());
-                }
-
-                String[] ccDates = u.getCcExpirationDate().split("/");
-
-                if (!m_driver.findElement(By.id("CardExpireDateMM")).getAttribute("value").contains(ccDates[0])) {
-                    m_driver.findElement(By.id("CardExpireDateMM")).sendKeys(ccDates[0]);
-                }
-
-                if (!m_driver.findElement(By.id("CardExpireDateYY")).getAttribute("value").contains(ccDates[1])) {
-                    m_driver.findElement(By.id("CardExpireDateYY")).sendKeys(ccDates[1]);
-                }
-
-                if (!m_driver.findElement(By.id("CardCCV")).getAttribute("value").contains(u.getCvc())) {
-                    m_driver.findElement(By.id("CardCCV")).sendKeys(u.getCvc());
-                }
-                WebElement ccStatus = m_driver.findElement(By.id("CC_statusCheck"));
-                if (ccStatus.findElement(By.xpath("//span[@role='alert']")).getText().contains("successfully")) {
-                    ccInfoEntered = true;
-                }
-            } catch (ElementNotInteractableException | NoSuchElementException e) {
-                fails++;
-                ccInfoEntered = false;
-                Thread.sleep(250);
-                System.out.println("4 - trying again...");
-                e.printStackTrace();
-            }
-        }
-        paymentSubmit();
-    }
-
-    private void paymentSubmit() throws Exception {
-        int fails = 0;
-        boolean submitted = false;
-        while(!submitted) {
-            if (fails > FAIL_LIMIT) {
-                checkStock();
-                return;
-            }
-            try {
-                m_driver.findElement(By.id("payMethodPaneContinue")).click();
-                submitted = true;
-            } catch (ElementNotInteractableException | NoSuchElementException e) {
-                fails++;
-                submitted = false;
-                Thread.sleep(250);
-                System.out.println("5 - trying again...");
-            }
-        }
-        unsubscribe();
-    }
-
-    private void unsubscribe() throws Exception {
-        int fails = 0;
-        boolean unsubClicked = false;
-        while(!unsubClicked) {
-            if (fails > FAIL_LIMIT) {
-                checkStock();
-                return;
-            }
-            try {
-                m_driver.findElement(By.xpath("//label[@for='orderReviewPaneBillSubscribeEmail']")).click();
-                unsubClicked = true;
-            } catch (ElementNotInteractableException | NoSuchElementException e) {
-                fails++;
-                unsubClicked = false;
-                Thread.sleep(250);
-                System.out.println("5 - trying again...");
-            }
-        }
-        purchase(u, s);
-    }
-
-    private void purchase(User u, Site s) throws Exception {
-        int fails = 0;
-        boolean bought = false;
-        while(!bought) {
-            if (fails > FAIL_LIMIT) {
-                checkStock();
-                return;
-            }
-            try {
-                m_driver.findElement(By.id("orderSubmit")).click();
-                Thread.sleep(5000);
-                bought = true;
-                Main.buying.get(index).setPriority(Thread.MIN_PRIORITY);
-            } catch (ElementNotInteractableException | NoSuchElementException e) {
-                fails++;
-                bought = false;
-                Thread.sleep(250);
-                System.out.println("6 - trying again...");
-            }
-        }
+        //logging
     }
 
 

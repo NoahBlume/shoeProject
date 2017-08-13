@@ -16,7 +16,7 @@ public class Main {
         }
 
 
-//        List<User> ul = dm.getUserList();
+//        List<User> ul = dm.getUserList(); overwrite comment
 
 //        Scraper scrappyDoo = new Scraper();
 //        scrappyDoo.checkStock(ul.get(0), ul.get(0).getSites().get(0));
@@ -97,6 +97,13 @@ public class Main {
             return;
         }
         user.setEmail(email);
+
+        pl("Enter this User's password");
+        String password = scan.next();
+        if (password.equals("exit")) {
+            return;
+        }
+        user.setPassword(password);
 
         pl("Enter this user's phone number (10 digits with no dashes)");
         String phone = scan.next();
@@ -199,12 +206,13 @@ public class Main {
         pl("What would you like to edit (enter 'exit' to go back to the main menu)");
         pl("0: name");
         pl("1: email");
-        pl("2: phone");
-        pl("3: credit card info");
-        pl("4: address info");
-        pl("5: edit site");
-        pl("6: add site");
-        pl("7: delete site");
+        pl("2: password");
+        pl("3: phone");
+        pl("4: credit card info");
+        pl("5: address info");
+        pl("6: edit site");
+        pl("7: add site");
+        pl("8: delete site");
 
         String input = scan.next();
         if ("exit".equals(input)) {
@@ -220,21 +228,24 @@ public class Main {
                     editEmail(u);
                     break;
                 case 2:
-                    editPhone(u);
+                    editPassword(u);
                     break;
                 case 3:
-                    editCreditCard(u);
+                    editPhone(u);
                     break;
                 case 4:
-                    editAddress(u);
+                    editCreditCard(u);
                     break;
                 case 5:
-                    editSites(u);
+                    editAddress(u);
                     break;
                 case 6:
-                    addSite(u);
+                    editSites(u);
                     break;
                 case 7:
+                    addSite(u);
+                    break;
+                case 8:
                     deleteSites(u);
                     break;
                 default:
@@ -273,6 +284,15 @@ public class Main {
         String email = scan.next();
         if (!email.equals("exit")) {
             u.setEmail(email);
+            SaveHelper.save(dm);
+        }
+    }
+
+    private static void editPassword(User u) {
+        pl("Please enter the user's new password (enter 'exit' to go back to the previous menu)");
+        String password = scan.next();
+        if (!password.equals("exit")) {
+            u.setPassword(password);
             SaveHelper.save(dm);
         }
     }
@@ -713,8 +733,8 @@ public class Main {
                     if (proxyList.size() != 0) {
                         proxy = proxyList.get(scraperIndex % proxyList.size());
                     }
-                    Scraper2 scraper2 = new Scraper2(u, s, scraperIndex, proxy);
-                    Thread thread = new Thread(scraper2);
+                    Scraper scraper = new Scraper(u, s, scraperIndex, proxy);
+                    Thread thread = new Thread(scraper);
                     thread.setPriority(Thread.MIN_PRIORITY);
                     thread.start();
                     buying.add(thread);

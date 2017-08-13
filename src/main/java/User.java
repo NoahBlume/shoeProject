@@ -9,6 +9,7 @@ public class User implements Serializable {
     private String firstName;
     private String lastName;
     private String email;
+    private String password;
     private String ccNumber;
     private String ccExpirationDate;
     private String cvc;
@@ -129,6 +130,10 @@ public class User implements Serializable {
     public Site removeSite(int siteIndex) {
         return sites.remove(siteIndex);
     }
+
+    public String getPassword() { return password; }
+
+    public void setPassword(String password) { this.password = password; }
 
     @Override
     public String toString() {
