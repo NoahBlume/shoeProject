@@ -7,6 +7,7 @@ import org.openqa.selenium.*;
 import org.openqa.selenium.firefox.FirefoxOptions;
 import org.openqa.selenium.firefox.FirefoxProfile;
 import org.openqa.selenium.firefox.GeckoDriverService;
+import org.openqa.selenium.firefox.internal.ProfilesIni;
 import org.openqa.selenium.phantomjs.PhantomJSDriver;
 import org.openqa.selenium.phantomjs.PhantomJSDriverService;
 import org.openqa.selenium.remote.CapabilityType;
@@ -54,7 +55,13 @@ class Scraper implements Runnable {
         this.index = index;
 
         System.setProperty("webdriver.gecko.driver","drivers/geckodriver/geckodriver.exe");
+
         FirefoxProfile firefoxProfile = new FirefoxProfile();
+        ProfilesIni profile = new ProfilesIni();
+        FirefoxProfile myprofile = profile.getProfile("list");
+        m_driver = new FirefoxDriver(myprofile);
+
+
         firefoxProfile.setPreference("browser.privatebrowsing.autostart", true);
  //        try {
 //             String[] proxySplit = proxyString.split(":");
