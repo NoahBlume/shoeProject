@@ -5,23 +5,23 @@ import java.io.Serializable;
  */
 public class Site implements Serializable{
     private SiteEnum siteEnum;
-    private String url;
+    private String shoeName;
     private String shoeSize;
     private int quantity = 1;
     private int scanFrequency = 6; //stock checks per minute - default 6
 
 
 
-    public Site(String url) {
-        this.url = url;
+    public Site(String shoeName) {
+        this.shoeName = shoeName;
     }
 
     public SiteEnum getSiteEnum() {
         return siteEnum;
     }
 
-    public String getUrl() {
-        return url;
+    public String getShoeName() {
+        return shoeName;
     }
 
     public int getScanFrequency() {
@@ -40,8 +40,8 @@ public class Site implements Serializable{
         this.siteEnum = siteEnum;
     }
 
-    public void setUrl(String url) {
-        this.url = url;
+    public void setShoeName(String shoeName) {
+        this.shoeName = shoeName;
     }
 
     public void setScanFrequency(String scanFrequency) {
@@ -67,5 +67,5 @@ public class Site implements Serializable{
     }
 
     @Override
-    public String toString() { return url; }
+    public String toString() { return shoeName; }
 }

@@ -1,6 +1,7 @@
 
 
 import com.google.gson.JsonObject;
+import org.apache.commons.lang3.StringUtils;
 import org.openqa.selenium.WebDriver;
 import org.openqa.selenium.firefox.FirefoxDriver;
 import org.openqa.selenium.*;
@@ -20,6 +21,7 @@ import java.nio.file.Files;
 import java.nio.file.Paths;
 import java.nio.file.StandardOpenOption;
 import java.util.List;
+import java.util.concurrent.TransferQueue;
 
 import static org.openqa.selenium.remote.CapabilityType.BROWSER_NAME;
 import static org.openqa.selenium.remote.CapabilityType.PROXY;
@@ -58,8 +60,8 @@ class Scraper implements Runnable {
 
         FirefoxProfile firefoxProfile = new FirefoxProfile();
         ProfilesIni profile = new ProfilesIni();
-        FirefoxProfile myprofile = profile.getProfile("list");
-        m_driver = new FirefoxDriver(myprofile);
+        FirefoxProfile myProfile = profile.getProfile("list");
+        m_driver = new FirefoxDriver(myProfile);
 
 
         firefoxProfile.setPreference("browser.privatebrowsing.autostart", true);
@@ -82,14 +84,16 @@ class Scraper implements Runnable {
 //            proxy.setHttpProxy(proxyString);
 //            capabilities.setCapability(PROXY, proxy);
 
- //            m_driver = new FirefoxDriver(capabilities);
+//             m_driver = new FirefoxDriver(capabilities);
 //         } catch (Exception e) {
    //          e.printStackTrace();
    //          System.out.println("proxy use failed");
-             m_driver = new FirefoxDriver(firefoxProfile);
+             //m_driver = new FirefoxDriver(firefoxProfile);
   //       }
 
-//        m_driver = new FirefoxDriver();
+/*
+          m_driver = new FirefoxDriver(firefoxProfile);
+ */
 //        DesiredCapabilities caps = new DesiredCapabilities();
 //        caps.setCapability(PhantomJSDriverService.PHANTOMJS_EXECUTABLE_PATH_PROPERTY,
 //                "drivers/phantomjs-2.1.1-windows/bin/phantomjs.exe");
@@ -97,9 +101,55 @@ class Scraper implements Runnable {
     }
 
     public void run() {
-        m_driver.get(s.getUrl());
+//        m_driver.get(s.getUrl());
+        m_driver.get("https://store.nike.com/us/en_us/pw/new-mens/meZ7pu");
         m_driver.findElement(By.xpath("//span[contains(@class, 'login-text')]")).click();
         login();
+    }
+
+    void findShoe() {
+        int fails = 0;
+        try {
+            boolean looking = true;
+            while(looking) {
+                if (fails > FAIL_LIMIT) {
+                    return;
+                }
+                try {
+                    m_driver.get("https://store.nike.com/us/en_us/pw/new-mens/meZ7pu");
+                    List<WebElement> newReleases = m_driver.findElements(By.className("product-display-name"));
+                    for (WebElement release: newReleases) {
+                        String releaseName = release.getText();
+//                        if  (releaseName.contains("cola") && releaseName.contains("coca") && releaseName.contains("converse")) {
+//                            release.click();
+//                            looking = false;
+//                            break;
+//                        }
+                        int dif = StringUtils.getLevenshteinDistance(s.getShoeName().toLowerCase(), releaseName.toLowerCase(), 20);
+                        if  (dif >= 0 && dif < 10) {
+                            release.click();
+                            looking = false;
+                            break;
+                        }
+
+                        //int dif = StringUtils.getLevenshteinDistance(s.getShoeName().toLowerCase(), releaseName.toLowerCase(), 20);
+                        //if (dif <= 5 && dif >= 0) {
+                        //   release.click();
+                        //   looking = false;
+                        //   break;
+                        //}
+                    }
+                } catch(Exception e) {
+                    fails++;
+                    System.out.println("failed to check availability");
+                    System.out.println(e.getMessage());
+                    e.printStackTrace();
+                }
+            }
+            checkStock();
+        } finally {
+            m_driver.close();
+        }
     }
 
     void login() {
@@ -120,6 +170,7 @@ class Scraper implements Runnable {
                     m_driver.findElement(By.xpath("//input[@data-componentname='password']")).sendKeys(u.getPassword());
                     m_driver.findElement(By.xpath("//input[@type='button'][@value='LOG IN']")).click();
                     loggedIn = true;
+                    Thread.sleep(5000);
                 } catch(Exception e) {
                     fails++;
                     System.out.println("failed to login.");
@@ -127,7 +178,7 @@ class Scraper implements Runnable {
                     e.printStackTrace();
                 }
             }
-            checkStock();
+            findShoe();
         } finally {
             m_driver.close();
         }
@@ -167,7 +218,7 @@ class Scraper implements Runnable {
                         }
                     }
                     if (!inStock) {
-                        m_driver.get(s.getUrl());
+                        m_driver.navigate().refresh();
                     }
                 } catch(Exception e) {
                     fails++;
@@ -344,13 +395,22 @@ class Scraper implements Runnable {
             try {
                 m_driver.findElement(By.className("ch4_btnPlaceOrder")).click();
                 orderPlaced = true;
-                Thread.sleep(10 * 1000);
+                Thread.sleep(1000);
             } catch (ElementNotInteractableException | NoSuchElementException e) {
                 fails++;
                 orderPlaced = false;
                 Thread.sleep(250);
                 System.out.println("2 - trying again...");
             }
+
+        }
+        //sometimes the button isn't pressed the first time
+        //this is a quick temp fix that tries to click the button again
+        try {
+            m_driver.findElement(By.className("ch4_btnPlaceOrder")).click();
+            Thread.sleep(1000);
+        } catch (ElementNotInteractableException | NoSuchElementException e) {
+            //just continue without crashing, the button may have already been pressed
         }
         logPurchase();
     }
@@ -358,7 +418,7 @@ class Scraper implements Runnable {
 
     private void logPurchase() throws Exception {
         try {
-            Files.write(Paths.get("attemptedBuys.txt"), (u.getEmail() + " " + s.getUrl() + "\n").getBytes(), StandardOpenOption.APPEND);
+            Files.write(Paths.get("attemptedBuys.txt"), (u.getEmail() + " " + s.getShoeName() + "\n").getBytes(), StandardOpenOption.APPEND);
             Thread.sleep(10 * 1000);
         }catch (IOException e) {
             //exception handling left as an exercise for the reader

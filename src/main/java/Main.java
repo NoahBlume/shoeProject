@@ -408,12 +408,13 @@ public class Main {
 
     private static void addSite(User u) {
         pl("Enter the info for the new Site (enter 'exit' to go back to the main menu)");
-        pl("Enter this Site's url");
-        String url = scan.next();
-        if (url.equals("exit")) {
+        pl("Enter this Site's shoe name");
+        scan.nextLine();
+        String shoeName = scan.nextLine();
+        if (shoeName.equals("exit")) {
             return;
         }
-        Site site = new Site(url);
+        Site site = new Site(shoeName);
 
         pl("Enter this Site's scan frequency - in seconds");
         String scanFrequency = scan.next();
@@ -519,7 +520,7 @@ public class Main {
         pl("Enter a number corresponding the part of the site you want to edit (enter 'exit' to go back to the main menu)");
         pl("What would you like to edit (enter 'exit' to go back to the main menu)");
         pl("0: Site type"); //site enum
-        pl("1: url");
+        pl("1: shoe name");
         pl("2: scan frequency");
         pl("3: quantity");
         pl("4: shoe size");
@@ -535,7 +536,7 @@ public class Main {
                     editSiteEnum(s, u);
                     break;
                 case 1:
-                    editSiteUrl(s, u);
+                    editSiteShoeName(s, u);
                     break;
                 case 2:
                     editSiteScanFrequency(s, u);
@@ -591,13 +592,14 @@ public class Main {
         editSite(s, u);
     }
 
-    private static void editSiteUrl(Site s, User u) {
-        pl("Please enter the site's new url (enter 'exit' to go back to the previous menu)");
-        String url = scan.next();
-        if (url.equals("exit")) {
+    private static void editSiteShoeName(Site s, User u) {
+        pl("Please enter the site's new shoe name (enter 'exit' to go back to the previous menu)");
+        scan.nextLine();
+        String shoeName = scan.nextLine();
+        if (shoeName.equals("exit")) {
             return;
         } else {
-            s.setUrl(url);
+            s.setShoeName(shoeName);
             SaveHelper.save(dm);
         }
         editSite(s, u);
@@ -740,7 +742,7 @@ public class Main {
                     buying.add(thread);
                     //scrappyDoo.checkStock(u, s);
                 } catch (Exception e) {
-                    System.out.println("Failed to check user: " + u.getFullName() + " site: " + s.getUrl());
+                    System.out.println("Failed to check user: " + u.getFullName() + " site: " + s.getShoeName());
                     System.out.println("please make sure that all info is entered correctly for the user and site");
                 }
             }
