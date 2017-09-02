@@ -102,54 +102,8 @@ class Scraper implements Runnable {
 
     public void run() {
 //        m_driver.get(s.getUrl());
-        m_driver.get("https://store.nike.com/us/en_us/pw/new-mens/meZ7pu");
-        m_driver.findElement(By.xpath("//span[contains(@class, 'login-text')]")).click();
+        m_driver.get(s.getShoeName());
         login();
-    }
-
-    void findShoe() {
-        int fails = 0;
-        try {
-            boolean looking = true;
-            while(looking) {
-                if (fails > FAIL_LIMIT) {
-                    return;
-                }
-                try {
-                    m_driver.get("https://store.nike.com/us/en_us/pw/new-mens/meZ7pu");
-                    List<WebElement> newReleases = m_driver.findElements(By.className("product-display-name"));
-                    for (WebElement release: newReleases) {
-                        String releaseName = release.getText();
-//                        if  (releaseName.contains("cola") && releaseName.contains("coca") && releaseName.contains("converse")) {
-//                            release.click();
-//                            looking = false;
-//                            break;
-//                        }
-                        int dif = StringUtils.getLevenshteinDistance(s.getShoeName().toLowerCase(), releaseName.toLowerCase(), 20);
-                        if  (dif >= 0 && dif < 10) {
-                            release.click();
-                            looking = false;
-                            break;
-                        }
-
-                        //int dif = StringUtils.getLevenshteinDistance(s.getShoeName().toLowerCase(), releaseName.toLowerCase(), 20);
-                        //if (dif <= 5 && dif >= 0) {
-                        //   release.click();
-                        //   looking = false;
-                        //   break;
-                        //}
-                    }
-                } catch(Exception e) {
-                    fails++;
-                    System.out.println("failed to check availability");
-                    System.out.println(e.getMessage());
-                    e.printStackTrace();
-                }
-            }
-            checkStock();
-        } finally {
-            m_driver.close();
-        }
     }
 
     void login() {
@@ -162,7 +116,7 @@ class Scraper implements Runnable {
                     return;
                 }
                 try {
-                    //m_driver.findElement(By.xpath("//span[contains(@class, 'login-text')]")).sendKeys(Keys.CONTROL, Keys.SHIFT, "P" );
+                    m_driver.findElement(By.xpath("//a[contains(text(), 'Join / Log In')]")).click();
                     Thread.sleep(1000);
                     m_driver.findElement(By.xpath("//input[@data-componentname='emailAddress']")).clear();
                     m_driver.findElement(By.xpath("//input[@data-componentname='emailAddress']")).sendKeys(u.getEmail());
@@ -178,7 +132,7 @@ class Scraper implements Runnable {
                     e.printStackTrace();
                 }
             }
-            findShoe();
+            checkStock();
         } finally {
             m_driver.close();
         }
